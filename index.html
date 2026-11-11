@@ -1,0 +1,2920 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>闖關教育遊戲範本</title>
+<style>
+  /* =========================================================
+     外觀設定
+     預設是可愛風。GAME.theme 可以換成另外四套主題(warm / parchment / scifi / terminal),
+     每套主題只是把下面這組變數換掉,不影響遊戲邏輯。
+     想微調配色:改 :root(可愛風)或對應主題區塊裡的變數,不要把顏色散寫到各個元件裡。
+     ========================================================= */
+  :root {
+    --bg: #eee8ff;          /* 背景 */
+    --dot: #dcd2ff;         /* 背景花紋 */
+    --paper: #fffdf7;       /* 卡片 */
+    --surface: #fff;        /* 按鈕、輸入框的底色 */
+    --soft: #fff3c4;        /* 已填入、已選取的底色 */
+    --ink: #3b3355;         /* 文字 */
+    --edge: #3b3355;        /* 描邊 */
+    --muted: #8a82a6;       /* 次要文字 */
+    --pink: #ff8fb1;        /* 主色(主要按鈕) */
+    --on-primary: #3b3355;  /* 主色上的文字 */
+    --mint: #7ed8b5;        /* 答對 */
+    --on-good: #3b3355;
+    --good-text: #2f9c73;
+    --butter: #ffd86b;      /* 強調 */
+    --on-accent: #3b3355;
+    --lav: #c9bbff;         /* * # 按鍵 */
+    --peach: #ffc2a8;       /* 刪除鍵 */
+    --bad: #ff6f7d;         /* 答錯 */
+    --clue-bg: #fff8e1;     /* 線索卡 */
+    --clue-ink: #3b3355;
+    --clue-paper: #fff;     /* 線索卡裡小圖卡、插圖的底色 */
+    --bw: 3px;
+    --radius: 18px;
+    --card-radius: 32px;
+    --line: var(--bw) solid var(--edge);
+    --pop: 0 5px 0 var(--edge);      /* 貼紙感的實心陰影 */
+    --pop-press: 0 1px 0 var(--edge);
+    --card-shadow: 0 8px 0 var(--edge);
+    --bg-image: radial-gradient(var(--dot) 3px, transparent 3.5px);
+    --bg-size: 28px 28px;
+    --font: "jf-openhuninn-2.0", "jf open 粉圓 2.0", "Zen Maru Gothic", "M PLUS Rounded 1c",
+            "Arial Rounded MT Bold", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  }
+  /* 溫暖 / 烘焙坊 / 農場 / 童話小鎮:奶油色底、木頭色描邊、橘色主色 */
+  :root[data-theme="warm"] {
+    --bg: #fbf1e3; --dot: #f1dcc0; --paper: #fffaf2; --surface: #fff; --soft: #ffe8c7;
+    --ink: #5a3a22; --edge: #8a5a35; --muted: #a07a5a;
+    --pink: #f29f58; --on-primary: #3a2312; --mint: #9cc77a; --on-good: #2f3d1e; --good-text: #4f8a2b;
+    --butter: #f6c95f; --on-accent: #3a2312; --lav: #e8cfa8; --peach: #f5b7a0; --bad: #d9534f;
+    --clue-bg: #fff4dc; --clue-ink: #5a3a22; --clue-paper: #fff;
+    --bw: 2px; --radius: 14px; --card-radius: 24px;
+    --pop: 0 4px 0 var(--edge); --pop-press: 0 1px 0 var(--edge);
+    --card-shadow: 0 6px 0 var(--edge), 0 18px 40px rgba(90,58,34,.18);
+    --bg-image: radial-gradient(var(--dot) 2px, transparent 2.5px); --bg-size: 22px 22px;
+  }
+  /* 古典 / 鍊金 / 古宅:深色木質、黃銅描邊、羊皮紙線索卡 */
+  :root[data-theme="parchment"] {
+    --bg: #0f0c0a; --dot: #2a211a; --paper: #1c1815; --surface: #0c0a09; --soft: #4a3a14;
+    --ink: #f4ebd0; --edge: #b8973d; --muted: #a89f8c;
+    --pink: #d4af37; --on-primary: #1a160d; --mint: #3f9d6b; --on-good: #fff; --good-text: #6ee7a8;
+    --butter: #d4af37; --on-accent: #1a160d; --lav: #4a3f6b; --peach: #7c4a2d; --bad: #ef5350;
+    --clue-bg: radial-gradient(ellipse at center, #fbf7ea 0%, #e8dcbf 75%, #cfba91 100%); --clue-ink: #382818; --clue-paper: #fbf7ea;
+    --bw: 2px; --radius: 10px; --card-radius: 16px;
+    --pop: 0 3px 8px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.12);
+    --pop-press: 0 1px 2px rgba(0,0,0,.6);
+    --card-shadow: 0 20px 50px rgba(0,0,0,.8), inset 0 0 30px rgba(212,175,55,.08);
+    --bg-image: radial-gradient(circle at 50% 10%, var(--dot) 0%, transparent 65%); --bg-size: auto;
+    --font: "Noto Serif TC", "Source Han Serif TC", "Songti TC", "PMingLiU", Georgia, serif;
+  }
+  /* 科幻 / 太空 / 深海基地:深藍底、青色螢光 HUD */
+  :root[data-theme="scifi"] {
+    --bg: #050b14; --dot: rgba(34,211,238,.07); --paper: #0a1522; --surface: #06101b; --soft: #0e3a4a;
+    --ink: #d7f3ff; --edge: #22d3ee; --muted: #6b8ba4;
+    --pink: #22d3ee; --on-primary: #03121a; --mint: #10b981; --on-good: #03121a; --good-text: #34d399;
+    --butter: #fbbf24; --on-accent: #1a1200; --lav: #1e3a5f; --peach: #5b2333; --bad: #ff4d5e;
+    --clue-bg: #071a29; --clue-ink: #a5f3fc; --clue-paper: #06101b;
+    --bw: 1px; --radius: 6px; --card-radius: 10px;
+    --pop: 0 0 0 1px rgba(34,211,238,.2), 0 0 12px rgba(34,211,238,.25);
+    --pop-press: 0 0 4px rgba(34,211,238,.5);
+    --card-shadow: 0 0 40px rgba(34,211,238,.18), inset 0 0 60px rgba(34,211,238,.04);
+    --bg-image: linear-gradient(var(--dot) 1px, transparent 1px), linear-gradient(90deg, var(--dot) 1px, transparent 1px);
+    --bg-size: 32px 32px;
+    --font: "Share Tech Mono", Consolas, "SF Mono", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", monospace;
+  }
+  /* 復古終端機 / 駕駛艙 / 懸疑:CRT 綠字、琥珀色強調、掃描線 */
+  :root[data-theme="terminal"] {
+    --bg: #0a0e14; --dot: rgba(51,255,119,.05); --paper: #111a24; --surface: #090d14; --soft: #1d3323;
+    --ink: #d6ffe4; --edge: #2f6b47; --muted: #78909c;
+    --pink: #33ff77; --on-primary: #04140a; --mint: #33ff77; --on-good: #04140a; --good-text: #33ff77;
+    --butter: #ffaa33; --on-accent: #1a0f00; --lav: #1f2f45; --peach: #4a2a1a; --bad: #ff3344;
+    --clue-bg: #0c1410; --clue-ink: #33ff77; --clue-paper: #090d14;
+    --bw: 1px; --radius: 4px; --card-radius: 6px;
+    --pop: 0 2px 0 rgba(0,0,0,.7); --pop-press: 0 0 0 rgba(0,0,0,.7);
+    --card-shadow: 0 0 0 1px #000, 0 0 30px rgba(51,255,119,.12);
+    --bg-image: linear-gradient(var(--dot) 50%, transparent 50%); --bg-size: 100% 4px;
+    --font: Consolas, "SF Mono", "Courier New", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--bg);
+    background-image: var(--bg-image);
+    background-size: var(--bg-size);
+    color: var(--ink);
+    font-family: var(--font);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+  .card {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    background: var(--paper);
+    border: var(--line);
+    border-radius: var(--card-radius);
+    padding: 30px 26px 28px;
+    box-shadow: var(--card-shadow);
+  }
+  h1 { font-size: 1.7rem; margin: 6px 0 8px; text-align: center; letter-spacing: .03em; }
+  p.desc { color: var(--muted); margin: 0 0 22px; line-height: 1.7; text-align: center; }
+
+  /* ----- 吉祥物(純 SVG,只在可愛風顯示)與主題圖示(其他主題顯示 GAME.icon) ----- */
+  .mascot { display: block; margin: 0 auto; width: 110px; height: 96px; }
+  .mascot.small { width: 64px; height: 56px; }
+  .mascot .mouth-happy, .mascot .mouth-sad { display: none; }
+  .mascot.happy .mouth-idle, .mascot.sad .mouth-idle { display: none; }
+  .mascot.happy .mouth-happy { display: inline; }
+  .mascot.sad .mouth-sad { display: inline; }
+  .mascot.happy, .icon-badge.happy { animation: hop .5s ease; }
+  .mascot.sad, .icon-badge.sad { animation: wobble .4s ease; }
+  .icon-badge {
+    display: none; margin: 0 auto 6px; width: 84px; height: 84px; border-radius: 50%;
+    border: var(--line); background: var(--surface); box-shadow: var(--pop);
+    align-items: center; justify-content: center; font-size: 2.6rem; line-height: 1;
+  }
+  .icon-badge.small { width: 48px; height: 48px; font-size: 1.5rem; margin: 0; flex: none; }
+  :root[data-theme]:not([data-theme="cute"]) .mascot { display: none; }
+  :root[data-theme]:not([data-theme="cute"]) .icon-badge { display: flex; }
+  @keyframes hop { 0%,100% { transform: translateY(0); } 40% { transform: translateY(-12px); } }
+  @keyframes wobble { 0%,100% { transform: rotate(0); } 30% { transform: rotate(-8deg); } 70% { transform: rotate(8deg); } }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    border: var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-size: 1.05rem;
+    margin-bottom: 18px;
+    outline: none;
+  }
+  input[type="text"]:focus { box-shadow: 0 0 0 4px var(--butter); }
+  button { font: inherit; cursor: pointer; color: var(--ink); }
+  button:focus-visible { outline: 4px solid var(--butter); outline-offset: 2px; }
+  button:disabled { cursor: default; }
+  .btn-primary, .btn-secondary {
+    width: 100%;
+    border: var(--line);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    box-shadow: var(--pop);
+    transition: transform .08s, box-shadow .08s, filter .15s;
+  }
+  .btn-primary { background: var(--pink); color: var(--on-primary); }
+  .btn-secondary { background: var(--butter); color: var(--on-accent); margin-top: 18px; }
+  .btn-primary:hover:not(:disabled), .btn-secondary:hover:not(:disabled) { filter: brightness(1.08); }
+  .btn-primary:active, .btn-secondary:active { transform: translateY(4px); box-shadow: var(--pop-press); }
+  .btn-primary:disabled { opacity: .55; }
+
+  /* ----- 故事框(開始畫面的背景故事、結局) ----- */
+  .story {
+    background: var(--clue-bg); color: var(--clue-ink);
+    border: var(--line); border-radius: var(--radius);
+    padding: 14px 18px; margin: 0 0 18px; line-height: 1.8; white-space: pre-line; font-size: .98rem;
+  }
+
+  /* ----- 遊戲畫面上方:圖示、關卡進度、倒數、愛心 ----- */
+  .game-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .progress-area { flex: 1; min-width: 0; }
+  .progress-wrap {
+    background: var(--surface);
+    border: var(--line);
+    border-radius: 999px;
+    height: 22px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: repeating-linear-gradient(-45deg, var(--pink) 0 10px, var(--butter) 10px 20px);
+    border-right: var(--line);
+    transition: width .45s cubic-bezier(.3,1.4,.6,1);
+  }
+  .stepper { display: flex; align-items: center; }
+  .step {
+    flex: none; width: 28px; height: 28px; border-radius: 50%;
+    border: var(--line); background: var(--surface); color: var(--muted);
+    display: flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700;
+    transition: background .3s, transform .3s;
+  }
+  .step.done { background: var(--mint); color: var(--on-good); }
+  .step.now { background: var(--butter); color: var(--on-accent); transform: scale(1.18); box-shadow: var(--pop-press); }
+  .step-line { flex: 1; height: var(--bw); min-width: 4px; background: var(--muted); opacity: .45; }
+  .step-line.done { background: var(--mint); opacity: 1; }
+  .timer {
+    flex: none; border: var(--line); border-radius: 999px; background: var(--surface);
+    padding: 4px 12px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .timer.danger { color: var(--bad); border-color: var(--bad); animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: .45; } }
+  .hearts { font-size: 1.15rem; letter-spacing: 1px; white-space: nowrap; }
+
+  /* ----- 道具袋與工具列 ----- */
+  .toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .inventory {
+    flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+    border: var(--bw) dashed var(--muted); border-radius: var(--radius); padding: 6px 10px; min-height: 44px;
+  }
+  .inventory .inv-label { color: var(--muted); font-size: .85rem; white-space: nowrap; }
+  .item-chip {
+    flex: none; border: var(--line); border-radius: 999px; background: var(--surface);
+    padding: 3px 10px; font-size: .88rem; font-weight: 700; white-space: nowrap;
+  }
+  .item-chip.new { animation: pop .4s ease, glow 1.2s ease 2; }
+  @keyframes glow { 50% { box-shadow: 0 0 0 5px var(--butter); } }
+  .tool-btn {
+    flex: none; margin-left: auto; border: var(--line); border-radius: 999px; background: var(--surface);
+    padding: 7px 14px; font-size: .95rem; font-weight: 700; box-shadow: var(--pop-press);
+  }
+  .tool-btn + .tool-btn { margin-left: 0; }
+  .tool-btn:hover { background: var(--soft); }
+
+  /* ----- 關卡內容:標題、場景、插圖、線索卡、題目 ----- */
+  .level-body.enter { animation: fadeUp .35s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .level-title {
+    display: inline-block;
+    background: var(--butter);
+    color: var(--on-accent);
+    border: var(--line);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: .95rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .scene { color: var(--muted); line-height: 1.8; margin: 0 0 12px; font-style: italic; white-space: pre-line; }
+  .art { margin: 0 0 14px; }
+  .art svg, .clue-body svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+  /* 線索卡的底色和內文不同,裡面的插圖、小圖卡改用線索卡的配色(--ink、--surface 在卡片裡會換掉) */
+  .clue, .explain, .hint-tier { --ink: var(--clue-ink); --muted: var(--clue-ink); --surface: var(--clue-paper); }
+  .teacher { margin: 0 0 16px; border: var(--bw) dashed var(--muted); border-radius: var(--radius); padding: 8px 14px; color: var(--muted); font-size: .92rem; line-height: 1.7; white-space: pre-line; }
+  .teacher summary { cursor: pointer; font-weight: 700; }
+  .clue {
+    background: var(--clue-bg); color: var(--clue-ink);
+    border: var(--line); border-radius: var(--radius);
+    padding: 12px 16px; margin: 0 0 12px; line-height: 1.8;
+  }
+  .clue-title { margin: 0 0 4px; font-size: .9rem; letter-spacing: .08em; opacity: .75; }
+  .clue-body { white-space: pre-line; font-weight: 700; }
+  .clue-body.revealed { animation: develop 1s ease; }
+  @keyframes develop { from { opacity: 0; filter: blur(6px); } to { opacity: 1; filter: none; } }
+  .clue-reveal {
+    border: var(--bw) dashed currentColor; border-radius: var(--radius); background: transparent; color: inherit;
+    padding: 8px 14px; font-weight: 700; width: 100%;
+  }
+  .clue-reveal:hover { background: rgba(127,127,127,.15); }
+  /* 插圖用的小圖卡:art 或線索的 html 裡寫 <div class="props"><div class="prop">…</div>…</div> */
+  .props { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; white-space: normal; }
+  .prop {
+    flex: 1 1 70px; max-width: 150px; min-height: 84px; border: var(--line); border-radius: var(--radius);
+    background: var(--surface); color: var(--ink); padding: 8px 6px; text-align: center; line-height: 1.5;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-weight: 700;
+  }
+  .prop small { color: var(--muted); font-weight: 400; font-size: .75rem; }
+  .prop .big { font-size: 1.8rem; line-height: 1.2; }
+  .question { font-size: 1.3rem; margin: 6px 0 18px; line-height: 1.6; font-weight: 700; white-space: pre-line; }
+
+  /* ----- 選擇題、複選題按鈕 ----- */
+  .choice {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: var(--surface);
+    border: var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+    box-shadow: var(--pop);
+    transition: transform .08s, box-shadow .08s, background .15s;
+  }
+  .choice:hover:not(:disabled) { background: var(--soft); }
+  .choice:active:not(:disabled) { transform: translateY(4px); box-shadow: var(--pop-press); }
+  .choice.picked { background: var(--soft); box-shadow: var(--pop-press); transform: translateY(4px); }
+  .choice.picked::before { content: "✓ "; }
+  .choice.correct { background: var(--mint); color: var(--on-good); }
+  .choice.wrong { background: var(--bad); color: #fff; animation: shake .3s; }
+
+  /* ----- 密碼輸入格 ----- */
+  .passcode-display { display: flex; justify-content: center; gap: 10px; margin: 4px 0 14px; flex-wrap: wrap; }
+  .passcode-slot {
+    width: 58px; height: 68px;
+    border: var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.1rem; font-weight: 700;
+  }
+  .passcode-slot.filled { background: var(--soft); animation: pop .18s ease; }
+  .passcode-shake { animation: shake .3s; }
+  @keyframes pop { 0% { transform: scale(.8); } 100% { transform: scale(1); } }
+
+  /* ----- 大尺寸鍵盤(電話鍵盤排列:1-9、* 0 #,最下排刪除與確認) ----- */
+  .keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 6px;
+  }
+  .key {
+    min-height: 76px;
+    border: var(--line);
+    border-radius: calc(var(--radius) + 6px);
+    background: var(--surface);
+    font-size: 2.1rem;
+    font-weight: 700;
+    box-shadow: var(--pop);
+    transition: transform .08s, box-shadow .08s;
+    touch-action: manipulation;
+    user-select: none;
+  }
+  .key:active:not(:disabled), .key.pressed { transform: translateY(4px); box-shadow: var(--pop-press); }
+  .key:disabled { opacity: .6; }
+  .key.symbol { background: var(--lav); }
+  .key.back { background: var(--peach); font-size: 1.5rem; }
+  .key.confirm { background: var(--mint); color: var(--on-good); grid-column: span 2; font-size: 1.5rem; }
+
+  /* ----- 轉輪鎖 dial ----- */
+  .dial { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 4px 0 16px; flex-wrap: wrap; }
+  .wheel { display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
+  .wheel-label { text-align: center; font-size: .8rem; font-weight: 700; color: var(--muted); max-width: 90px; }
+  .wheel-btn {
+    min-width: 58px; height: 38px; border: var(--line); border-radius: var(--radius); background: var(--surface);
+    font-size: 1rem; box-shadow: var(--pop-press); touch-action: manipulation;
+  }
+  .wheel-btn:active:not(:disabled) { transform: translateY(1px); }
+  .wheel-val {
+    min-width: 58px; height: 68px; padding: 0 8px; border: var(--line); border-radius: var(--radius); background: var(--soft);
+    display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700;
+  }
+  .wheel-val.turn { animation: pop .15s ease; }
+  .wheel-val.long { font-size: 1.25rem; white-space: nowrap; }
+  .dial-sep { font-size: 2rem; font-weight: 700; }
+
+  /* ----- 順序機關 sequence ----- */
+  .seq-trail { min-height: 40px; text-align: center; font-weight: 700; font-size: 1.1rem; margin-bottom: 10px; color: var(--muted); }
+  .seq-grid { display: grid; gap: 12px; margin-bottom: 12px; }
+  .seq-btn {
+    min-height: 72px; border: var(--line); border-radius: var(--radius); background: var(--surface);
+    font-size: 1.15rem; font-weight: 700; box-shadow: var(--pop); white-space: pre-line; line-height: 1.4;
+    transition: transform .08s, box-shadow .08s, background .2s; touch-action: manipulation;
+  }
+  .seq-btn:active:not(:disabled), .seq-btn.lit { transform: translateY(4px); box-shadow: var(--pop-press); background: var(--butter); color: var(--on-accent); }
+  .seq-btn { position: relative; }
+  .seq-btn.on { background: var(--soft); }
+  .seq-btn.on::after {
+    content: attr(data-n); position: absolute; top: 4px; right: 6px; min-width: 22px; height: 22px; padding: 0 5px;
+    border-radius: 999px; background: var(--butter); color: var(--on-accent); font-size: .75rem; line-height: 22px;
+  }
+  .seq-btn.blocked { opacity: .45; border-style: dashed; box-shadow: none; }
+  .cup {
+    position: relative; width: 110px; height: 200px; margin: 0 auto 12px; overflow: hidden;
+    border: var(--line); border-top: none; border-radius: 0 0 18px 18px; background: var(--surface);
+  }
+  .cup .water { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: var(--mint); opacity: .75; transition: height .2s; }
+  .cup::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(to top, transparent 0 calc(var(--tick) - 1px), var(--muted) calc(var(--tick) - 1px) var(--tick));
+    -webkit-mask: linear-gradient(90deg, #000 30%, transparent 30%); mask: linear-gradient(90deg, #000 30%, transparent 30%);
+  }
+  .link-btn { border: 0; background: none; color: var(--muted); text-decoration: underline; padding: 6px; display: block; margin: 0 auto; }
+
+  /* ----- 計數 counter(可以加上天平)、滑桿 slider(可以加上羅盤) ----- */
+  .stepper-row { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 6px 0 16px; }
+  .round-btn {
+    width: 60px; height: 60px; border-radius: 50%; border: var(--line); background: var(--surface);
+    font-size: 1.8rem; font-weight: 700; box-shadow: var(--pop); line-height: 1; touch-action: manipulation;
+  }
+  .round-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: var(--pop-press); }
+  .readout { min-width: 110px; text-align: center; font-size: 2.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .readout small { font-size: 1.1rem; margin-left: 4px; color: var(--muted); }
+  .balance { position: relative; height: 150px; margin: 0 auto 8px; max-width: 320px; }
+  .balance .pillar { position: absolute; left: 50%; top: 14px; width: 10px; height: 118px; margin-left: -5px; background: var(--edge); border-radius: 4px; }
+  .balance .base { position: absolute; left: 50%; bottom: 8px; width: 110px; height: 12px; margin-left: -55px; background: var(--edge); border-radius: 6px; }
+  .balance .beam {
+    --tilt: 0deg; position: absolute; left: 10%; right: 10%; top: 18px; height: 8px; border-radius: 4px;
+    background: var(--butter); border: 1px solid var(--edge); transform: rotate(var(--tilt)); transition: transform .6s cubic-bezier(.3,1.5,.6,1);
+  }
+  .balance .pan {
+    position: absolute; top: 6px; width: 96px; margin-left: -48px; padding-top: 44px; text-align: center;
+    transform-origin: 50% 0; transform: rotate(calc(var(--tilt) * -1)); transition: transform .6s cubic-bezier(.3,1.5,.6,1);
+    background: linear-gradient(var(--edge), var(--edge)) 50% 0 / 2px 44px no-repeat;
+  }
+  .balance .pan.left { left: 0; } .balance .pan.right { left: 100%; }
+  .balance .pan span {
+    display: block; border: var(--line); border-top-width: 1px; border-radius: 4px 4px 40px 40px; background: var(--surface);
+    padding: 4px 6px 8px; font-weight: 700; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  input[type="range"].slider { width: 100%; margin: 4px 0 16px; accent-color: var(--pink); height: 32px; }
+  .compass {
+    position: relative; width: 150px; height: 150px; margin: 0 auto 10px; border-radius: 50%;
+    border: var(--line); background: var(--surface); box-shadow: var(--pop);
+  }
+  .compass::before { content: "N"; position: absolute; top: 4px; left: 0; right: 0; text-align: center; font-size: .8rem; font-weight: 700; color: var(--muted); }
+  .compass .needle {
+    position: absolute; left: 50%; bottom: 50%; width: 6px; height: 56px; margin-left: -3px; border-radius: 3px;
+    background: var(--bad); transform-origin: 50% 100%; transition: transform .15s;
+  }
+  .compass-mark { position: absolute; font-size: .8rem; font-weight: 700; color: var(--muted); font-style: normal; }
+  .compass-mark.e { right: 7px; top: 50%; transform: translateY(-50%); }
+  .compass-mark.s { bottom: 4px; left: 0; right: 0; text-align: center; }
+  .compass-mark.w { left: 7px; top: 50%; transform: translateY(-50%); }
+  .compass::after { content: ""; position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; margin: -7px; border-radius: 50%; background: var(--edge); }
+
+  /* ----- 放置 assign:把物件放進格子 ----- */
+  .slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .slot {
+    min-height: 86px; border: var(--bw) dashed var(--edge); border-radius: var(--radius); background: transparent;
+    padding: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  }
+  .slot .slot-label { font-size: .85rem; color: var(--muted); }
+  .slot .slot-item { font-weight: 700; font-size: 1.1rem; min-height: 1.4em; }
+  .slot.filled { border-style: solid; background: var(--soft); }
+  .chip.selected { background: var(--butter); color: var(--on-accent); transform: translateY(-4px); }
+  /* 拖曳 */
+  .chip.draggable { cursor: grab; }
+  .chip.dragging { opacity: .35; }
+  .drag-ghost {
+    position: fixed; z-index: 70; pointer-events: none; margin: 0;
+    transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 10px 24px rgba(0,0,0,.3);
+  }
+  .slot.drop-hover { background: var(--soft); outline: 3px solid var(--butter); outline-offset: 2px; }
+  /* 格子疊在插圖上(assign 的 board) */
+  .board { position: relative; max-width: 440px; margin: 0 auto 14px; }
+  .board > svg, .board > img { display: block; width: 100%; height: auto; }
+  .board-slots { position: absolute; inset: 0; }
+  .board-slots .slot {
+    position: absolute; transform: translate(-50%, -50%); min-height: 0; min-width: 64px; padding: 4px 8px;
+    background: var(--paper); opacity: .92; border-radius: 10px;
+  }
+  .board-slots .slot .slot-label { font-size: .75rem; }
+  .board-slots .slot .slot-item { font-size: .95rem; min-height: 1.2em; }
+  .board-slots .slot { white-space: nowrap; }
+  @media (max-width: 420px) {
+    .board-slots .slot { min-width: 44px; padding: 2px 5px; }
+    .board-slots .slot .slot-label { font-size: .65rem; }
+    .board-slots .slot .slot-item { font-size: .8rem; }
+  }
+  /* 疊圖對齊 / 定位 */
+  .align-box { position: relative; max-width: 440px; margin: 4px auto 8px; user-select: none; -webkit-user-select: none; overflow: hidden; }
+  .align-box > svg, .align-box > img { display: block; width: 100%; height: auto; }
+  .align-overlay {
+    position: absolute; transform: translate(-50%, -50%); cursor: grab; touch-action: none;
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,.35)); transition: filter .2s;
+  }
+  .align-overlay > svg, .align-overlay > img { display: block; width: 100%; height: auto; }
+  .align-overlay.dragging { cursor: grabbing; filter: drop-shadow(0 8px 14px rgba(0,0,0,.45)); }
+  .align-overlay.locked { cursor: default; filter: none; }
+  .align-overlay:focus-visible { outline: 3px solid var(--butter); outline-offset: 2px; }
+  .align-pin { font-size: 2rem; line-height: 1; text-align: center; transform: translateY(-45%); }   /* 圖釘的尖端對準位置 */
+  .align-box .align-overlay { z-index: 2; }
+  .align-trail { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+  .align-trail polyline { fill: none; stroke: #e03131; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 7 5; vector-effect: non-scaling-stroke; }
+  .chip.align-reset { display: block; margin: 0 auto 10px; font-size: .95rem; padding: 6px 14px; }
+  /* 火會閃動;煙隨時間變濃、擴大,並一縷一縷往上飄散 */
+  @keyframes flameFlick { 0%,100% { transform: scale(1,1) skewX(0deg); } 25% { transform: scale(.9,1.12) skewX(-4deg); } 50% { transform: scale(1.07,.93) skewX(3deg); } 75% { transform: scale(.95,1.08) skewX(-2deg); } }
+  @keyframes smokeGrow { from { opacity: calc(var(--dens,1) * .25); transform: translateY(0) scale(.7); } to { opacity: var(--dens,1); transform: translateY(-5px) scale(1.2); } }
+  @keyframes smokeRise { 0% { transform: translate(0,0) scale(.6); opacity: 0; } 20% { opacity: .55; } 100% { transform: translate(var(--dx,0px),-28px) scale(1.7); opacity: 0; } }
+  .fl, .fl2, .sm, .sw { transform-box: fill-box; transform-origin: 50% 100%; }
+  .fl { animation: flameFlick .8s ease-in-out infinite; }
+  .fl2 { animation: flameFlick .45s ease-in-out infinite; }
+  @keyframes smokeTravel { from { transform: translate(var(--sx,0px), var(--sy,0px)) scale(.3); opacity: 0; } to { transform: translate(0,0) scale(1); opacity: 1; } }
+  .sm { transform-origin: 50% 50%; animation: smokeTravel 10s ease-out both; }
+  .sd { transform-box: fill-box; transform-origin: 50% 60%; animation: smokeGrow 40s ease-out both; }
+  @keyframes readyJig { 0%,100% { transform: translate(0,0) rotate(0); } 20% { transform: translate(-1.5px,-2px) rotate(-5deg); } 40% { transform: translate(1.5px,0) rotate(4deg); } 60% { transform: translate(-1px,-1.5px) rotate(-3deg); } 80% { transform: translate(1px,0) rotate(3deg); } }
+  .idle-jig { display: inline-block; transform-origin: 50% 90%; animation: readyJig .6s ease-in-out infinite; }
+  .align-overlay.dragging .idle-jig, .align-overlay.locked .idle-jig { animation: none; }
+  .sw { transform-origin: 50% 50%; opacity: 0; animation: smokeRise 6s ease-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .fl, .fl2, .sw, .idle-jig { animation: none; } .sw { opacity: 0; } .sm { animation: none; opacity: 1; transform: none; } .sd { animation: none; opacity: var(--dens,1); transform: none; } }
+  @keyframes roomSmoke { from { opacity: 0; } to { opacity: .34; } }
+  .rs { opacity: 0; animation: roomSmoke 14s ease-in both; pointer-events: none; }
+  @keyframes dangerPulse { 0%,100% { opacity: .25; } 50% { opacity: 1; } }
+  .align-box.danger::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 3; border: 4px solid rgba(224,49,49,.85); animation: dangerPulse .9s ease-in-out infinite; }
+  .aligned .align-overlay { animation: pop .3s ease; }
+  .align-tip { text-align: center; font-size: .8rem; color: var(--muted); margin: 0 0 10px; font-weight: 400; }
+  .align-after { margin-top: 8px; }
+  .aligned .align-tip { display: none; }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+  .feedback { min-height: 28px; font-size: 1.05rem; font-weight: 700; margin: 6px 0 4px; text-align: center; line-height: 1.6; white-space: pre-line; }
+  .feedback.good { color: var(--good-text); }
+  .feedback.bad { color: var(--bad); }
+  .hidden { display: none !important; }
+  .summary { background: var(--surface); border: var(--line); border-radius: var(--radius); padding: 6px 18px; margin-top: 12px; }
+  .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 2px dashed var(--lav); font-size: 1.05rem; }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row span:last-child { font-weight: 700; }
+  .level-errors { background: #fff0f1; border: 3px solid var(--bad); border-radius: 18px; color: #c62836; font-size: .9rem; line-height: 1.6; margin: 0 0 16px; padding: 12px 16px; }
+  .level-errors ul { margin: 6px 0 0; padding-left: 20px; }
+  .level-warnings { background: #fff8e1; border: 3px solid #ffd86b; border-radius: 18px; color: #8a6d00; font-size: .9rem; line-height: 1.6; margin: 0 0 16px; padding: 12px 16px; }
+  .level-warnings ul { margin: 6px 0 0; padding-left: 20px; }
+  input.text-answer { font-size: 1.4rem; text-align: center; margin-bottom: 14px; }
+  .explain { background: var(--clue-bg); color: var(--clue-ink); border: var(--line); border-radius: var(--radius); padding: 12px 16px; margin: 8px 0 14px; line-height: 1.7; white-space: pre-line; }
+  .next-wrap { margin-top: 6px; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 6px 0 14px; min-height: 58px; }
+  .chip { border: var(--line); border-radius: var(--radius); background: var(--surface); padding: 10px 14px; font-size: 1.15rem; font-weight: 700; box-shadow: var(--pop); transition: transform .1s; }
+  .chip:disabled { opacity: .6; }
+  .chip-slot { background: var(--soft); }
+  .submit-status { color: var(--muted); font-size: .9rem; margin-top: 14px; text-align: center; }
+
+  /* ----- 提示視窗、浮動訊息 ----- */
+  .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .modal {
+    width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto; background: var(--paper); color: var(--ink);
+    border: var(--line); border-radius: var(--card-radius); padding: 22px 22px 24px; box-shadow: var(--card-shadow);
+    animation: fadeUp .25s ease;
+  }
+  .modal h2 { margin: 0 0 12px; font-size: 1.3rem; text-align: center; }
+  .hint-tier { background: var(--clue-bg); color: var(--clue-ink); border: var(--line); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 10px; line-height: 1.7; }
+  .hint-tier b { display: block; font-size: .85rem; opacity: .75; }
+  .toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 60; max-width: 90vw;
+    background: var(--ink); color: var(--paper); border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: .95rem;
+    box-shadow: 0 6px 20px rgba(0,0,0,.35); animation: fadeToast 2.6s ease forwards; pointer-events: none;
+  }
+  @keyframes fadeToast { 0% { opacity: 0; } 10%, 85% { opacity: 1; } 100% { opacity: 0; } }
+  /* terminal 主題的掃描線 */
+  :root[data-theme="terminal"] body::after {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 100; opacity: .5;
+    background: linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,.25) 50%); background-size: 100% 3px;
+  }
+
+  @media (max-width: 420px) {
+    .card { padding: 24px 16px 22px; }
+    .key { min-height: 66px; font-size: 1.8rem; }
+    .passcode-slot { width: 48px; height: 58px; font-size: 1.7rem; }
+    .wheel-btn, .wheel-val { min-width: 48px; }
+    .step { width: 22px; height: 22px; font-size: .7rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 吉祥物圖形:定義一次,三個畫面共用 -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <g id="mascot-shape">
+      <path d="M20 70 C10 40 30 12 60 12 C90 12 110 40 100 70 C96 86 80 92 60 92 C40 92 24 86 20 70 Z" fill="#ffe3ec" stroke="#3b3355" stroke-width="4"/>
+      <path d="M40 16 L34 2 L48 12 Z M80 16 L86 2 L72 12 Z" fill="#ffe3ec" stroke="#3b3355" stroke-width="4" stroke-linejoin="round"/>
+      <circle cx="44" cy="52" r="5" fill="#3b3355"/>
+      <circle cx="76" cy="52" r="5" fill="#3b3355"/>
+      <ellipse cx="34" cy="64" rx="7" ry="4" fill="#ff8fb1" opacity=".7"/>
+      <ellipse cx="86" cy="64" rx="7" ry="4" fill="#ff8fb1" opacity=".7"/>
+    </g>
+  </defs>
+</svg>
+
+<div class="card" id="card">
+
+  <!-- ===== 畫面一:開始畫面 ===== -->
+  <div id="screen-start">
+    <svg class="mascot" viewBox="0 0 120 96" aria-hidden="true">
+      <use href="#mascot-shape"/>
+      <path class="mouth-idle" d="M54 64 Q60 70 66 64" fill="none" stroke="#3b3355" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+    <div class="icon-badge" data-icon="game" aria-hidden="true"></div>
+    <h1 id="game-title">闖關小冒險</h1>
+    <p class="desc" id="game-desc">輸入你的名字,一關一關往前走吧!</p>
+    <div class="story hidden" id="game-story"></div>
+    <details class="teacher hidden" id="teacher-notes"><summary>給老師</summary><div id="teacher-text"></div></details>
+    <div class="level-errors hidden" id="level-errors" role="alert"></div>
+    <div class="level-warnings hidden" id="level-warnings"></div>
+    <input type="text" id="player-name" placeholder="你的名字或暱稱">
+    <button class="btn-primary" id="btn-start">開始闖關</button>
+    <button class="btn-secondary hidden" id="btn-reset">從頭開始</button>
+  </div>
+
+  <!-- ===== 畫面二:遊戲進行中 ===== -->
+  <div id="screen-game" class="hidden">
+    <div class="game-head">
+      <svg class="mascot small" id="game-mascot" viewBox="0 0 120 96" aria-hidden="true">
+        <use href="#mascot-shape"/>
+        <path class="mouth-idle" d="M54 64 Q60 70 66 64" fill="none" stroke="#3b3355" stroke-width="4" stroke-linecap="round"/>
+        <path class="mouth-happy" d="M50 62 Q60 76 70 62 Z" fill="#3b3355"/>
+        <path class="mouth-sad" d="M53 70 Q60 62 67 70" fill="none" stroke="#3b3355" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div class="icon-badge small" id="game-icon" data-icon="game" aria-hidden="true"></div>
+      <div class="progress-area">
+        <div class="stepper hidden" id="stepper" aria-hidden="true"></div>
+        <div class="progress-wrap" id="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+      </div>
+      <span class="timer hidden" id="timer" aria-label="剩餘時間"></span>
+      <span class="hearts hidden" id="lives"></span>
+    </div>
+    <div class="toolbar">
+      <div class="inventory hidden" id="inventory" aria-label="道具袋"></div>
+      <button class="tool-btn hidden" id="btn-hint">💡 提示</button>
+      <button class="tool-btn" id="btn-sound" aria-label="音效開關">🔊</button>
+    </div>
+
+    <div class="level-body" id="level-body">
+      <div class="level-title" id="level-title"></div>
+      <p class="scene hidden" id="scene"></p>
+      <div class="art hidden" id="art"></div>
+      <div id="clues"></div>
+      <div class="question" id="question-text"></div>
+
+      <!-- 作答區:由各題型自己決定放什麼;提示文字在上下兩區之間 -->
+      <div id="gate" class="hidden"><button class="clue-reveal" id="btn-gate" style="margin-bottom:12px"></button></div>
+      <div id="answer-top"></div>
+      <div class="feedback" id="feedback" aria-live="polite"></div>
+      <div class="explain hidden" id="explain"></div>
+      <div class="next-wrap hidden" id="next-wrap"><button class="btn-primary" id="btn-next">下一關 ▶</button></div>
+      <div id="answer-bottom"></div>
+    </div>
+  </div>
+
+  <!-- ===== 畫面三:結算畫面 ===== -->
+  <div id="screen-end" class="hidden">
+    <svg class="mascot happy" viewBox="0 0 120 96" aria-hidden="true">
+      <use href="#mascot-shape"/>
+      <path class="mouth-happy" d="M50 62 Q60 76 70 62 Z" fill="#3b3355"/>
+    </svg>
+    <div class="icon-badge happy" aria-hidden="true">🏆</div>
+    <h1 id="end-title">全部過關!</h1>
+    <div class="story hidden" id="end-story"></div>
+    <div class="summary" id="end-summary"></div>
+    <button class="btn-secondary" id="btn-restart">再玩一次</button>
+  </div>
+
+  <!-- ===== 畫面四:挑戰失敗(愛心用完或時間到) ===== -->
+  <div id="screen-fail" class="hidden">
+    <svg class="mascot sad" viewBox="0 0 120 96" aria-hidden="true">
+      <use href="#mascot-shape"/>
+      <path class="mouth-sad" d="M53 70 Q60 62 67 70" fill="none" stroke="#3b3355" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+    <div class="icon-badge sad" aria-hidden="true">💔</div>
+    <h1 id="fail-title">挑戰失敗…</h1>
+    <div class="story hidden" id="fail-story"></div>
+    <p class="desc" id="fail-text"></p>
+    <div class="summary" id="fail-summary"></div>
+    <button class="btn-primary" id="btn-retry" style="margin-top:18px">再試一次</button>
+  </div>
+
+  <div class="submit-status" id="submit-status"></div>
+
+</div>
+
+<!-- 提示視窗:一層一層打開(level.hints) -->
+<div class="overlay hidden" id="hint-modal" role="dialog" aria-modal="true" aria-labelledby="hint-heading">
+  <div class="modal">
+    <h2 id="hint-heading">💡 提示</h2>
+    <div id="hint-list"></div>
+    <button class="btn-secondary" id="btn-hint-close">回到關卡</button>
+  </div>
+</div>
+
+<!-- 程式分成三個 <script>(仍然是同一個檔案):
+     1. 錯誤顯示:下面兩段只要有語法錯誤(漏逗號、引號或括號沒成對),就在開始畫面顯示第幾行出錯
+     2. 設定與規則包:GAS_URL、STORAGE_KEY、RULES-PACK
+     3. 引擎
+   分開寫是因為同一個 <script> 裡只要有一個語法錯誤,整段都不會執行,連錯誤訊息都顯示不出來。不要合併回去。 -->
+<script>
+(function () {
+  let shown = false;
+  window.addEventListener("error", function (e) {
+    if (window.__engineReady || shown) return;      // 只處理「遊戲還沒準備好」時的第一個錯誤
+    shown = true;
+    const box = document.getElementById("level-errors");
+    const btn = document.getElementById("btn-start");
+    if (btn) btn.disabled = true;
+    if (!box) return;
+    const where = e.lineno ? `(這個檔案的第 ${e.lineno} 行附近)` : "";
+    box.textContent = `程式有錯誤,遊戲無法開始${where}:${e.message || "未知的錯誤"}。`
+      + "最常見的原因是漏了逗號、引號或括號沒有成對,請修正後重新整理。";
+    box.classList.remove("hidden");
+  });
+})();
+</script>
+
+<script>
+/* =========================================================
+   上傳與存檔設定
+   ========================================================= */
+
+/* Google Apps Script 上傳網址
+   部署好你自己的 GAS 後端(參考 SKILL.md 的步驟)之後,把網址貼在這裡。
+   如果還沒決定要不要串接,先放著沒關係,遊戲仍然可以正常玩,只是最後不會真的送出資料。 */
+const GAS_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+/* 存檔用的 key —— 同一個 GitHub 帳號如果放多個遊戲,
+   請把這裡改成不同的名稱,避免互相覆蓋進度 */
+const STORAGE_KEY = "edu-level-火災逃生闖關";
+
+/* ===== RULES-PACK:BEGIN ===== */
+const ITEMS = {
+  badge1: { name: "安全徽章", icon: "🏅", desc: "學會火災發生時的基本判斷" },
+  badge2: { name: "安全判斷徽章", icon: "🎖️", desc: "兩間公寓都能判斷出口是否安全,並選對逃生路線" },
+  badge3: { name: "迷思終結者徽章", icon: "🛡️", desc: "破解了火災逃生的常見迷思" },
+  badge4: { name: "逃生規劃家徽章", icon: "🗺️", desc: "知道家庭逃生路線圖要標什麼" }
+};
+
+/* ===== 情境插圖用的小工具(SVG 裡不放 emoji) ===== */
+function artSvg(inner) {
+  return `<svg viewBox="0 0 300 150" width="300" xmlns="http://www.w3.org/2000/svg" role="img" style="max-width:100%;height:auto;display:block;margin:0 auto">${inner}</svg>`;
+}
+function artText(x, y, str, size, bold) {
+  return `<text x="${x}" y="${y}" font-size="${size || 11}" text-anchor="middle" fill="currentColor"${bold ? ' font-weight="bold"' : ""}>${str}</text>`;
+}
+function artFlame(x, y, s) {
+  smokePuff.src = [x, y - 20 * s];     // 之後的煙都從這個火點出發
+  return `<g transform="translate(${x},${y}) scale(${s})"><g class="fl"><path d="M0 0 Q-9 -14 -1 -28 Q2 -18 8 -20 Q6 -28 14 -38 Q26 -20 21 -8 Q20 -2 14 0 Z" fill="#e8590c"/><path class="fl2" d="M5 0 Q1 -8 7 -14 Q11 -8 12 0 Z" fill="#ffd43b"/></g></g>` + smokeSource(x, y, s) + flameWisps(x, y, s);
+}
+function artPuff(x, y, r) { return smokePuff(x, y, r); }
+function artPerson(x, y, s) {
+  return `<g transform="translate(${x},${y}) scale(${s})" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"><circle cx="0" cy="-30" r="6"/><path d="M0 -24 V-8 M-9 -20 L9 -20 M0 -8 L-7 4 M0 -8 L7 4"/></g>`;
+}
+const ART_LINE = (y) => `<line x1="10" y1="${y}" x2="290" y2="${y}" stroke="currentColor" stroke-width="2"/>`;
+
+const ART_FIRE = artSvg(
+  ART_LINE(132) +
+  `<rect x="170" y="92" width="64" height="40" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>` +
+  artFlame(202, 92, 1.3) + artPuff(195, 40, 15) + artPuff(218, 30, 17) + artPuff(244, 24, 13) +
+  artPerson(80, 132, 1.6) + artText(202, 146, "廚房", 11)
+);
+const ART_DOOR = artSvg(
+  `<rect x="110" y="22" width="80" height="108" fill="var(--surface)" stroke="currentColor" stroke-width="2.5"/>` +
+  `<circle cx="178" cy="78" r="4" fill="currentColor"/>` +
+  `<path d="M115 14 q4 -7 8 0 t8 0 t8 0 t8 0 t8 0 t8 0 t8 0 t8 0 t8 0" fill="none" stroke="#e8590c" stroke-width="2"/>` +
+  `<rect x="204" y="68" width="32" height="16" rx="7" fill="var(--butter)" stroke="currentColor" stroke-width="1.5"/>` +
+  artText(220, 80, "手背", 9) + artText(150, 146, "房門", 11)
+);
+const ART_PHONE = artSvg(
+  `<rect x="115" y="12" width="70" height="120" rx="10" fill="var(--surface)" stroke="currentColor" stroke-width="2.5"/>` +
+  `<rect x="124" y="24" width="52" height="46" fill="none" stroke="currentColor" stroke-width="1.2"/>` +
+  artText(150, 56, "119", 22, true) +
+  `<circle cx="132" cy="90" r="5" fill="currentColor" fill-opacity="0.5"/><circle cx="150" cy="90" r="5" fill="currentColor" fill-opacity="0.5"/><circle cx="168" cy="90" r="5" fill="currentColor" fill-opacity="0.5"/>` +
+  `<circle cx="132" cy="108" r="5" fill="currentColor" fill-opacity="0.5"/><circle cx="150" cy="108" r="5" fill="currentColor" fill-opacity="0.5"/><circle cx="168" cy="108" r="5" fill="currentColor" fill-opacity="0.5"/>` +
+  `<rect x="205" y="22" width="80" height="46" rx="12" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>` + artText(245, 56, "?", 28, true) +
+  artPerson(60, 138, 1.6)
+);
+const ART_CLOSE = artSvg(
+  `<path d="M130 20 H20 V130 H130" fill="none" stroke="currentColor" stroke-width="2.5"/>` +
+  `<path d="M130 60 V20 H280 V130 H130 V100" fill="none" stroke="currentColor" stroke-width="2.5"/>` +
+  `<rect x="127" y="60" width="6" height="40" fill="var(--butter)" stroke="currentColor" stroke-width="1"/>` +
+  artFlame(60, 128, 1.2) + artPuff(50, 50, 14) + artPuff(85, 45, 16) + artPuff(110, 70, 12) +
+  artPerson(210, 130, 1.5) + artText(75, 36, "房間", 11) + artText(205, 36, "走廊", 11)
+);
+const ART_CLOTHES = artSvg(
+  ART_LINE(140) + artPerson(150, 138, 2.2) +
+  artFlame(150, 120, 1.1) + artFlame(133, 112, 0.8) + artFlame(167, 112, 0.8)
+);
+const ART_TRAPPED = artSvg(
+  `<rect x="30" y="15" width="240" height="115" fill="none" stroke="currentColor" stroke-width="2.5"/>` +
+  `<rect x="27" y="55" width="6" height="45" fill="var(--butter)" stroke="currentColor" stroke-width="1"/>` +
+  `<rect x="267" y="55" width="6" height="45" fill="var(--butter)" stroke="currentColor" stroke-width="1"/>` +
+  artPuff(13, 80, 12) + artPuff(12, 62, 8) + artPuff(288, 80, 12) + artPuff(289, 62, 8) +
+  `<rect x="125" y="12" width="50" height="6" fill="#74c0fc" stroke="currentColor" stroke-width="1"/>` +
+  artText(52, 48, "房門", 10) + artText(248, 48, "房門", 10) + artText(150, 34, "窗戶", 10) +
+  artPerson(150, 128, 1.5)
+);
+const ART_TOWER = artSvg(
+  `<rect x="90" y="12" width="120" height="133" fill="var(--surface)" stroke="currentColor" stroke-width="2.5"/>` +
+  `<path d="M90 33 H210 M90 54 H210 M90 75 H210 M90 96 H210 M90 117 H210" stroke="currentColor" stroke-width="1" fill="none"/>` +
+  `<rect x="100" y="38" width="18" height="12" fill="#74c0fc"/><rect x="125" y="38" width="18" height="12" fill="#74c0fc"/>` +
+  `<rect x="100" y="80" width="18" height="12" fill="#74c0fc"/><rect x="125" y="80" width="18" height="12" fill="#74c0fc"/><rect x="150" y="80" width="18" height="12" fill="#74c0fc"/>` +
+  `<rect x="100" y="101" width="18" height="12" fill="#74c0fc"/><rect x="150" y="101" width="18" height="12" fill="#74c0fc"/>` +
+  artFlame(112, 96, 0.5) + artFlame(137, 96, 0.5) +
+  `<circle cx="159" cy="44" r="7" fill="var(--butter)" stroke="currentColor" stroke-width="1.2"/>` + artText(159, 48, "你", 10, true) +
+  artText(150, 9, "屋頂", 10) + ART_LINE(145) + artText(255, 142, "地面", 10)
+);
+const ART_SMOKE = artSvg(
+  `<rect x="40" y="15" width="220" height="115" fill="none" stroke="currentColor" stroke-width="2.5"/>` +
+  `<rect x="40" y="15" width="220" height="48" fill="currentColor" fill-opacity="0.38"/>` +
+  artPuff(80, 66, 14) + artPuff(130, 70, 16) + artPuff(190, 68, 15) + artPuff(235, 64, 12) +
+  artPerson(150, 130, 2.2)
+);
+const ART_HALL = artSvg(
+  `<rect x="20" y="40" width="260" height="70" fill="none" stroke="currentColor" stroke-width="2.5"/>` +
+  artPuff(170, 76, 24) + artPuff(205, 70, 27) + artPuff(240, 78, 23) +
+  artPerson(70, 110, 1.4) +
+  `<rect x="80" y="76" width="18" height="8" fill="#74c0fc" stroke="currentColor" stroke-width="1"/>` +
+  artText(90, 70, "濕毛巾", 9) + artText(205, 34, "走廊", 11)
+);
+const ART_MAPQ = artSvg(
+  `<rect x="50" y="15" width="200" height="115" fill="none" stroke="currentColor" stroke-width="2.5"/>` +
+  `<path d="M50 72 H170 M170 15 V72" stroke="currentColor" stroke-width="2" fill="none"/>` +
+  `<rect x="95" y="12" width="40" height="6" fill="#74c0fc" stroke="currentColor" stroke-width="1"/>` +
+  `<rect x="246" y="92" width="8" height="22" fill="var(--butter)" stroke="currentColor" stroke-width="1"/>` +
+  artText(110, 46, "房間", 11) + artText(210, 46, "廚房", 11) + artText(140, 106, "客廳", 11) +
+  artText(115, 10, "窗戶", 9) + artText(228, 103, "大門", 10)
+);
+
+/* ===== 公寓平面圖 A、B(viewBox 300 x 240;座標換成百分比 = x/3、y/2.4) ===== */
+function planText(x, y, str, size, bold) {
+  return `<text x="${x}" y="${y}" font-size="${size || 10}" text-anchor="middle" fill="currentColor"${bold ? ' font-weight="bold"' : ""}>${str}</text>`;
+}
+function planRoom(x, y, w, h, label, kind) {
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="var(--surface)" fill-opacity="0.75" stroke="currentColor" stroke-width="1.2"/>` +
+    (kind ? `<rect x="${x + 0.6}" y="${y + 0.6}" width="${w - 1.2}" height="${h - 1.2}" fill="url(#pt-${kind})"/>` : "") +
+    (label ? planText(x + w / 2, y + h / 2 + 3, label, 10) : "");
+}
+/* 會動的煙:中心濃、外圈淡(由濃往淡擴散);整團隨時間變濃變大;另有淡淡的煙縷不斷往上(平面圖上方)飄 */
+/* 起火點的煙:整張圖最濃的地方,一開始就有,之後越來越濃 */
+function smokeSource(x, y, s) {
+  const cx = x + 6 * s, cy = y - 34 * s, r = 14 * s;
+  const c = (rr, o) => `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${rr.toFixed(1)}" fill="currentColor" fill-opacity="${o}"/>`;
+  return `<g class="sd" style="--dens:1;animation-delay:0s">${c(r * 1.5, 0.14)}${c(r, 0.26)}${c(r * 0.6, 0.4)}</g>`;
+}
+function flameWisps(x, y, s) {
+  return [0, 1, 2].map(i => `<circle class="sw" style="--dx:${(i - 1) * 6}px;animation-delay:${(i * 1.6).toFixed(1)}s" cx="${x + 6 * s}" cy="${(y - 32 * s).toFixed(1)}" r="${(6 * s).toFixed(1)}" fill="currentColor" fill-opacity="0.3"/>`).join("");
+}
+function smokePuff(x, y, r) {
+  const k = smokePuff.n = (smokePuff.n || 0) + 1, dx = ((k % 3) - 1) * 7;
+  const src = smokePuff.src || [x, y];
+  const dist = Math.hypot(src[0] - x, src[1] - y), d = dist * 0.18, dens = Math.max(0.3, 1 - dist / 140 * 0.7).toFixed(2);   // 離起火點越遠越淡       // 離起火點越遠,煙越晚到
+  const c = (rr, o) => `<circle cx="${x}" cy="${y}" r="${rr.toFixed(1)}" fill="currentColor" fill-opacity="${o}"/>`;
+  const wisp = (n) => `<circle class="sw" style="--dx:${dx * n}px;animation-delay:${(d + ((k + n + 4) % 4) * 1.5).toFixed(1)}s" cx="${x}" cy="${(y - r * 0.3).toFixed(1)}" r="${(r * 0.55).toFixed(1)}" fill="currentColor" fill-opacity="0.3"/>`;
+  return `<g class="sm" style="--sx:${(src[0] - x).toFixed(1)}px;--sy:${(src[1] - y).toFixed(1)}px;animation-delay:${d.toFixed(1)}s"><g class="sd" style="--dens:${dens};animation-delay:${d.toFixed(1)}s">${c(r * 1.4, 0.1)}${c(r, 0.17)}${c(r * 0.6, 0.26)}</g></g>` + wisp(1) + wisp(-1);
+}
+function planPuff(x, y, r) { return smokePuff(x, y, r); }
+function planDoor(x, y, w, h) {
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="var(--butter)" stroke="currentColor" stroke-width="1"/>`;
+}
+function planFlame(x, y, s) {
+  smokePuff.src = [x, y - 20 * s];     // 之後的煙都從這個火點出發
+  return `<g transform="translate(${x},${y}) scale(${s})"><g class="fl"><path d="M0 0 Q-9 -14 -1 -28 Q2 -18 8 -20 Q6 -28 14 -38 Q26 -20 21 -8 Q20 -2 14 0 Z" fill="#e8590c"/><path class="fl2" d="M5 0 Q1 -8 7 -14 Q11 -8 12 0 Z" fill="#ffd43b"/></g></g>` + smokeSource(x, y, s) + flameWisps(x, y, s);
+}
+const PLAN_DEFS = `<defs>
+<pattern id="pt-bed" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#b197fc" fill-opacity=".18"/><rect width="3" height="10" fill="#b197fc" fill-opacity=".25"/></pattern>
+<pattern id="pt-bath" width="7" height="7" patternUnits="userSpaceOnUse"><rect width="7" height="7" fill="#4dabf7" fill-opacity=".4"/><rect x=".7" y=".7" width="5.6" height="5.6" fill="#a5d8ff" fill-opacity=".6"/></pattern>
+<pattern id="pt-living" width="24" height="8" patternUnits="userSpaceOnUse"><rect width="24" height="8" fill="#d9a066" fill-opacity=".3"/><path d="M0 8 H24 M12 0 V8" stroke="#8b5a2b" stroke-opacity=".4" stroke-width=".8" fill="none"/></pattern>
+<pattern id="pt-kitchen" width="12" height="12" patternUnits="userSpaceOnUse"><rect width="12" height="12" fill="#ffe066" fill-opacity=".25"/><rect width="6" height="6" fill="#f08c00" fill-opacity=".25"/><rect x="6" y="6" width="6" height="6" fill="#f08c00" fill-opacity=".25"/></pattern>
+<pattern id="pt-corr" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#ced4da" fill-opacity=".35"/><circle cx="5" cy="5" r=".9" fill="#868e96" fill-opacity=".5"/></pattern>
+<pattern id="pt-hall" width="14" height="14" patternUnits="userSpaceOnUse"><rect width="14" height="14" fill="#adb5bd" fill-opacity=".3"/><path d="M0 0 H14 V14" stroke="#868e96" stroke-opacity=".35" stroke-width=".8" fill="none"/></pattern>
+<pattern id="pt-stair" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#8ce99a" fill-opacity=".22"/><rect width="2.5" height="6" fill="#2f9e44" fill-opacity=".3"/></pattern>
+<pattern id="pt-elev" width="5" height="6" patternUnits="userSpaceOnUse"><rect width="5" height="6" fill="#adb5bd" fill-opacity=".3"/><rect width="1.2" height="6" fill="#495057" fill-opacity=".3"/></pattern>
+<pattern id="pt-balc" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#ff922b" fill-opacity=".2"/><rect x=".5" y=".5" width="9" height="9" fill="none" stroke="#d9480f" stroke-opacity=".35" stroke-width=".8"/></pattern>
+</defs>`;
+function planOpen() {
+  return `<svg viewBox="0 0 300 240" width="300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="公寓逃生平面圖" style="max-width:100%;height:auto;display:block">` + PLAN_DEFS;
+}
+function planGoal() {
+  return `<rect x="10" y="198" width="280" height="34" rx="6" fill="#2f9e44" fill-opacity="0.28" stroke="currentColor" stroke-width="1.2"/>` + planText(150, 219, "室外集合點", 12, true);
+}
+
+// ---- A 公寓:走廊橫向,大門在右側 ----
+function planSvg(mode) {
+  const s = [planOpen()];
+  s.push(planRoom(10, 10, 70, 50, "臥室", "bed"), planRoom(80, 10, 45, 50, "浴室", "bath"), planRoom(125, 10, 75, 50, "", "kitchen"));
+  s.push(planRoom(10, 60, 190, 35, "", "corr"), planRoom(10, 95, 190, 55, "", "living"));
+  s.push(planRoom(212, 14, 70, 38, "電梯", "elev"), planRoom(200, 52, 90, 50, "", "hall"), planRoom(212, 104, 70, 42, "", "stair"), planRoom(20, 155, 80, 35, "", "stair"));
+  s.push(smokeLayer(mode === "main" ? SPREAD_A_MAIN : SPREAD_A_ALT));
+  s.push(planGoal());
+  s.push(`<rect x="10" y="10" width="190" height="140" fill="none" stroke="currentColor" stroke-width="3"/>`);
+  s.push(planText(100, 80, "走廊", 10), planText(60, 140, "客廳", 10), planText(245, 85, "公共走道", 9), planText(247, 120, "安全梯", 10), planText(60, 170, "後側安全梯", 9));
+  s.push(`<path d="M247 24 V50" stroke="currentColor" stroke-width="1"/>`);
+  s.push(`<path d="M222 142 V134 H232 V126 H242 V134 M252 142 V134 H262 V126 H272 V134" fill="none" stroke="currentColor" stroke-width="1" opacity="0.6"/>`);
+  s.push(`<path d="M30 185 H42 V179 H54 M66 185 H78 V179 H90" fill="none" stroke="currentColor" stroke-width="1" opacity="0.6"/>`);
+  s.push(planDoor(196, 70, 8, 14), planText(182, 90, "大門", 9, true));
+  s.push(planDoor(45, 146, 20, 8), planText(82, 146, "後門", 9, true));
+  s.push(planDoor(35, 56, 20, 8));
+  s.push(planFlame(150, 56, 1), planText(185, 54, "廚房", 9));
+  if (mode === "main") {
+    s.push(planPuff(35, 122, 16), planPuff(72, 114, 18), planPuff(110, 124, 17), planPuff(147, 116, 18), planPuff(178, 126, 14));
+  } else {
+    s.push(planPuff(145, 76, 13), planPuff(168, 74, 15), planPuff(190, 78, 12), planPuff(222, 76, 14), planPuff(262, 78, 14), planPuff(232, 122, 12));
+  }
+  s.push(`</svg>`);
+  return s.join("");
+}
+
+// ---- B 公寓:走廊直向,大門在下方,廚房連陽台和外側逃生梯 ----
+function planSvgB(mode) {
+  const s = [planOpen()];
+  s.push(planRoom(10, 10, 75, 70, "主臥室", "bed"), planRoom(10, 80, 75, 40, "浴室", "bath"), planRoom(10, 120, 75, 30, "次臥室", "bed"));
+  s.push(planRoom(85, 10, 30, 140, "", "corr"), planRoom(115, 10, 95, 80, "", "living"), planRoom(115, 90, 95, 60, "", "kitchen"));
+  s.push(planRoom(210, 90, 45, 60, "", "balc"), planRoom(255, 55, 35, 100, "", "stair"));
+  s.push(planRoom(10, 150, 200, 40, "", "hall"), planRoom(20, 156, 55, 28, "電梯", "elev"), planRoom(140, 156, 60, 28, "", "stair"));
+  s.push(smokeLayer(mode === "main" ? SPREAD_B_MAIN : SPREAD_B_ALT));
+  s.push(planGoal());
+  s.push(`<rect x="10" y="10" width="200" height="140" fill="none" stroke="currentColor" stroke-width="3"/>`);
+  s.push(planText(100, 80, "走廊", 10), planText(135, 24, "客廳", 10), planText(150, 140, "廚房", 10), planText(232, 148, "陽台", 9), planText(272, 70, "逃生梯", 9));
+  s.push(planText(170, 174, "安全梯", 10), planText(108, 186, "公共走道", 8));
+  s.push(`<path d="M262 150 V140 H272 V130 H282 V120 H272 V110 H282 V100 H272 V90 H282 V80" fill="none" stroke="currentColor" stroke-width="1" opacity="0.6"/>`);
+  s.push(`<path d="M150 182 H158 V178 H166 M174 182 H182 V178 H190" fill="none" stroke="currentColor" stroke-width="1" opacity="0.6"/>`);
+  s.push(`<path d="M47 158 V182" stroke="currentColor" stroke-width="1"/>`);
+  s.push(planDoor(92, 146, 16, 8), planText(100, 166, "大門", 9, true));
+  s.push(planDoor(82, 35, 6, 20), planDoor(112, 40, 6, 20), planDoor(112, 98, 6, 20), planDoor(207, 110, 6, 20), planDoor(252, 115, 6, 20));
+  s.push(planFlame(165, 88, 1.1));
+  if (mode === "main") {
+    s.push(planPuff(140, 50, 14), planPuff(165, 38, 16), planPuff(192, 52, 14), planPuff(150, 76, 12));
+  } else {
+    s.push(planPuff(140, 50, 12), planPuff(192, 52, 12));
+    s.push(planPuff(98, 140, 13), planPuff(100, 165, 14), planPuff(80, 172, 12), planPuff(125, 172, 12), planPuff(160, 170, 14), planPuff(186, 172, 10));
+  }
+  s.push(`</svg>`);
+  return s.join("");
+}
+/* ===== 煙從起火的房間慢慢擴散:t 是煙到達該房間的秒數(從這一題開始算)。小人站在煙已經到的房間,就來不及了。想調難度就改這裡的秒數 ===== */
+const SPREAD_A_MAIN = [
+  { n: "廚房", r: [125,10,200,60], t: 0 },
+  { n: "客廳", r: [10,95,200,150], t: 12 },
+  { n: "浴室", r: [80,10,125,60], t: 20 },
+  { n: "臥室", r: [10,10,80,60], t: 50 },
+  { n: "走廊", r: [105,60,200,95], t: 60 },
+  { n: "走廊", r: [10,60,105,95], t: 65 },
+  { n: "電梯間", r: [212,14,282,52], t: 70 },
+  { n: "公共走道", r: [200,52,290,102], t: 85 },
+  { n: "安全梯", r: [212,104,282,146], t: 105 },
+  { n: "後側安全梯", r: [20,155,100,190], t: 130 }
+];
+const SPREAD_A_ALT = [
+  { n: "廚房", r: [125,10,200,60], t: 0 },
+  { n: "走廊", r: [105,60,200,95], t: 10 },
+  { n: "公共走道", r: [200,52,290,102], t: 20 },
+  { n: "電梯間", r: [212,14,282,52], t: 25 },
+  { n: "浴室", r: [80,10,125,60], t: 30 },
+  { n: "臥室", r: [10,10,80,60], t: 50 },
+  { n: "走廊", r: [10,60,105,95], t: 60 },
+  { n: "安全梯", r: [212,104,282,146], t: 60 },
+  { n: "客廳", r: [10,95,200,150], t: 75 },
+  { n: "後側安全梯", r: [20,155,100,190], t: 110 }
+];
+const SPREAD_B_MAIN = [
+  { n: "客廳", r: [115,10,210,90], t: 0 },
+  { n: "廚房", r: [115,90,210,150], t: 30 },
+  { n: "陽台", r: [210,90,255,150], t: 45 },
+  { n: "走廊", r: [85,10,115,125], t: 55 },
+  { n: "主臥室", r: [10,10,85,80], t: 60 },
+  { n: "逃生梯", r: [255,55,290,155], t: 65 },
+  { n: "走廊", r: [85,125,115,150], t: 70 },
+  { n: "浴室", r: [10,80,85,120], t: 80 },
+  { n: "次臥室", r: [10,120,85,150], t: 85 },
+  { n: "公共走道", r: [10,150,210,190], t: 90 },
+  { n: "安全梯", r: [140,156,200,184], t: 110 }
+];
+const SPREAD_B_ALT = [
+  { n: "客廳", r: [115,10,210,90], t: 0 },
+  { n: "公共走道", r: [10,150,210,190], t: 15 },
+  { n: "走廊", r: [85,125,115,150], t: 20 },
+  { n: "走廊", r: [85,10,115,125], t: 55 },
+  { n: "主臥室", r: [10,10,85,80], t: 55 },
+  { n: "安全梯", r: [140,156,200,184], t: 60 },
+  { n: "廚房", r: [115,90,210,150], t: 70 },
+  { n: "浴室", r: [10,80,85,120], t: 80 },
+  { n: "次臥室", r: [10,120,85,150], t: 85 },
+  { n: "陽台", r: [210,90,255,150], t: 90 },
+  { n: "逃生梯", r: [255,55,290,155], t: 110 }
+];
+function smokeLayer(tbl) {
+  return tbl.map(q => `<rect class="rs" x="${q.r[0]}" y="${q.r[1]}" width="${q.r[2] - q.r[0]}" height="${q.r[3] - q.r[1]}" fill="#555" style="animation-delay:${q.t}s"/>`).join("");
+}
+function smokeRoomAt(tbl, px, py) {          // 小人(百分比座標)在哪個房間;重疊時取比較小的
+  const x = px * 3, y = py * 2.4; let best = null, area = 1e9;
+  for (const q of tbl) { const [a, b, c, d] = q.r; if (x >= a && x <= c && y >= b && y <= d && (c - a) * (d - b) < area) { area = (c - a) * (d - b); best = q; } }
+  return best;
+}
+const smokeMsg = (q) => `🚨 煙已經擴散到「${q.n}」,你來不及逃出去了!動作要快,要在煙擴散過來之前離開。`;
+
+const PLAN_MAIN = planSvg("main");
+const PLAN_ALT = planSvg("alt");
+const PLAN_B_MAIN = planSvgB("main");
+const PLAN_B_ALT = planSvgB("alt");
+
+const PLAN_LEGEND = "平面圖圖例:黃色方塊=門;橘色火焰=著火的地方;灰色煙團=濃煙(從起火點慢慢飄散);綠色長條=室外集合點。不同底色和花紋是不同的房間:浴室是馬賽克磁磚、廚房是格子地磚、客廳是木地板、陽台是紅磚。";
+
+function planPos(g) {
+  const p = String(g).split(",").map(Number);
+  return { x: p[0], y: p[1] };
+}
+function planIn(p, x1, y1, x2, y2) {
+  return p.x >= x1 && p.x <= x2 && p.y >= y1 && p.y <= y2;
+}
+const MSG_BATH = "🚨 迷思警報!浴室裡的水撲不滅大火,通常也沒有出口,躲進去會被困住。請重新選擇。";
+const MSG_ELEV = "🚨 迷思警報!火災時不能搭電梯,電梯可能停電卡住,濃煙也會灌進來。要走安全梯。";
+// A 公寓共用的危險區
+function planDanger(g) {
+  const p = planPos(g);
+  if (planIn(p, 26, 4, 42, 25)) return MSG_BATH;
+  if (planIn(p, 71, 4, 95, 30)) return MSG_ELEV;
+  if (planIn(p, 42, 4, 66, 24)) return "那裡是著火的廚房,要離得越遠越好!";
+  return "";
+}
+// B 公寓共用的危險區
+function planDangerB(g) {
+  const p = planPos(g);
+  if (planIn(p, 3, 33, 28, 50)) return MSG_BATH;
+  if (planIn(p, 5, 62, 25, 80)) return MSG_ELEV;
+  if (planIn(p, 38, 4, 70, 37)) return "那裡是著火的客廳,有火也有濃煙,要離得越遠越好!";
+  return "";
+}
+
+const LEVELS = [
+  // ===== 第一關:火災危機學習(情境選擇) =====
+  { type: "choice", title: "第一關-1:發現起火",
+    scene: "【火災危機學習】你在家裡,忽然聞到焦味,發現廚房起火了!",
+    art: ART_FIRE,
+    question: "第一時間該怎麼做?",
+    choices: [
+      "先收拾書包和玩具再離開",
+      "躲到床底下等火自己熄",
+      "大聲通知家人,立刻離開,到安全的地方再撥打 119"
+    ],
+    answerIndex: 2,
+    hints: ["想一想:逃生最重要的是什麼?", "要讓家人也知道,而且動作要快。", "通知家人、立刻離開,到安全的地方再報案。"],
+    mistakes: {
+      "先收拾書包和玩具再離開": "逃生每一秒都很寶貴,東西可以再買,人只有一個。",
+      "躲到床底下等火自己熄": "火不會自己熄,躲起來會錯過逃生的時機。"
+    },
+    success: "做得好!你通知了家人,大家一起安全離開。",
+    explanation: "發現火災:先大聲通知家人、立刻離開,到安全的地方再撥打 119。" },
+
+  { type: "choice", title: "第一關-2:很燙的房門",
+    scene: "你在房間裡,警報響了。你走到房門前,用手背輕輕一摸,門板很燙!",
+    art: ART_DOOR,
+    question: "下一步怎麼辦?",
+    choices: [
+      "不開門,改走其他出口,或留在房內關門避難、求救",
+      "立刻開門衝出去",
+      "把門打開一點點看看"
+    ],
+    answerIndex: 0,
+    hints: ["門很燙,代表什麼?", "門外可能有高溫或火。", "不要開門,想別的辦法。"],
+    mistakes: {
+      "立刻開門衝出去": "門板很燙,門外可能有火和高溫,衝出去很危險。",
+      "把門打開一點點看看": "只開一點點,煙和熱氣也會衝進來。"
+    },
+    success: "你沒有開門,保護了自己!",
+    explanation: "開門前先用手背摸門板;很燙就不要開,改走其他出口,或關門避難並求救。" },
+
+  { type: "multi", title: "第一關-3:撥打 119",
+    scene: "你已經逃到安全的地方,要撥打 119 報案。接電話的消防人員需要知道一些重要資訊。",
+    art: ART_PHONE,
+    question: "撥打 119 時,應該說清楚哪些事?(可複選)",
+    choices: [
+      "先問對方叫什麼名字,不用說地址",
+      "說清楚地址和樓層",
+      "說明是什麼地方著火、有沒有人受困",
+      "不用說話,等消防員自己找到"
+    ],
+    answerIndexes: [1, 2],
+    mistakeOf: (g) => {
+      if (/叫什麼名字|不用說話/.test(g)) return "消防員一定要先知道你在哪裡、發生什麼事,才能趕快來救你。";
+      if (!/地址/.test(g)) return "還少了「地址和樓層」!消防員要知道去哪裡。";
+      if (!/著火/.test(g)) return "還少了「哪裡著火、有沒有人受困」!消防員要知道狀況。";
+      return "";
+    },
+    hints: ["消防員要知道「去哪裡」。", "還要知道「發生什麼事」。", "地址和樓層,加上火災的狀況。"],
+    success: "119 接通了,消防車已經出發!",
+    explanation: "報案時要說清楚地址和樓層,以及哪裡著火、有沒有人受困。" },
+
+  { type: "choice", title: "第一關-4:順手關門",
+    scene: "你和家人逃出了著火的房間,走到走廊上。看看圖,房門口還留著一道門。",
+    art: ART_CLOSE,
+    question: "逃出房間後,要不要順手把門關上?",
+    choices: [
+      "不用,門開著比較通風",
+      "要,順手關上門,可以擋住煙和火,讓它不那麼快蔓延",
+      "把所有門窗都打開,讓煙跑出去"
+    ],
+    answerIndex: 1,
+    hints: ["火和煙會往哪裡跑?", "門可以幫我們擋住一些東西。", "關上門,可以爭取更多逃生時間。"],
+    mistakes: {
+      "不用,門開著比較通風": "開著門,空氣會讓火燒得更旺,煙也會跑得更快。",
+      "把所有門窗都打開,讓煙跑出去": "打開門窗會讓更多空氣進來,火會燒得更大。"
+    },
+    success: "你順手關門,幫大家爭取到時間!",
+    explanation: "逃生時順手關門,可以擋住煙和火,減緩火勢蔓延,讓更多人有時間逃出去。" },
+
+  { type: "choice", title: "第一關-5:衣服著火了",
+    scene: "逃生時,你的衣服不小心著火了!",
+    art: ART_CLOTHES,
+    question: "要怎麼做?",
+    choices: [
+      "快跑去找大人",
+      "停下來、倒地、雙手遮臉並滾動滅火",
+      "用扇子搧一搧"
+    ],
+    answerIndex: 1,
+    hints: ["跑動會讓火怎麼樣?", "要讓火熄滅,需要隔絕空氣。", "停、倒、滾。"],
+    mistakes: {
+      "快跑去找大人": "跑動會讓更多空氣進來,火會燒得更旺。",
+      "用扇子搧一搧": "搧風會讓火更大,不能滅火。"
+    },
+    success: "火熄了!你拿到第一枚徽章!",
+    reward: ["badge1"],
+    explanation: "衣服著火:停下來、倒地、雙手遮臉並滾動,可以隔絕空氣,讓火熄滅。" },
+
+  // ===== 第二關:逃生路線大考驗(每題一條完整路線,從臥室走到室外集合點) =====
+  { type: "locate", title: "第二關-1:A 公寓,走主要出口逃到集合點", routeCheck: true,
+    scene: "【逃生路線大考驗・A 公寓】你在平面圖左上角的臥室,警報響了!廚房(上方中間)著火,客廳(左下方)有濃煙,但大門外的公共走道是安全的。請畫出一條從臥室到「室外集合點」的完整逃生路線。",
+    clues: [{ title: "平面圖圖例", text: PLAN_LEGEND + "\n路線要依序經過:臥室小黃門 → 走廊 → 大門 → 安全梯 → 室外集合點。" }],
+    question: "按住 🧒,沿著安全的路線一路拖到綠色的「室外集合點」,紅色虛線就是你走的路。走完再按「我走到了」。",
+    base: PLAN_MAIN, smoke: SPREAD_A_MAIN, target: [50, 89.6], goal: [3, 82.5, 97, 97], tolerance: 10, start: [15, 14], marker: "🧒", confirmLabel: "我走到了",
+    goalMsg: "路線還沒走到室外集合點(最下方的綠色長條)。逃出來之後要一路走到集合點,才算平安!",
+    gates: [
+      { r: [9,21,21,29], msg: "路線要先從臥室的小黃門走出去,不能穿牆喔!" },
+      { r: [63,27,71,38], msg: "路線要經過走廊最右邊的「大門」,走到公共走道喔!" },
+      { r: [72,45,93,60], msg: "下樓要走「安全梯」,不能搭電梯。路線要經過安全梯!" }
+    ],
+    mistakeOf: (g) => { const d = planDanger(g); if (d) return d; const p = planPos(g); if (planIn(p, 3, 39, 67, 63)) return "🚨 迷思警報!客廳有濃煙,不要穿越濃煙。要找沒有煙的路。"; return ""; },
+    hints: [
+      "先看平面圖:火在上方中間的廚房,濃煙蓋住下方的客廳。中間橫向的「走廊」沒有煙。大門外的公共走道也沒有煙。",
+      "路線:從臥室下方的小黃門出來,沿走廊一直往右到「大門」,走到公共走道;不進浴室、不進客廳、不碰電梯。",
+      "再往右下走進「安全梯」,下樓之後一直往下,走到最下方綠色的「室外集合點」。"
+    ],
+    success: "你沿著走廊走到大門,從安全梯下樓,平安到達集合點!",
+    explanation: "逃生時要判斷哪條路安全:走沒有煙、沒有火的路,走到主要出口,走安全梯不搭電梯,最後到集合點。" },
+  { type: "locate", title: "第二關-2:A 公寓,大門被濃煙擋住", routeCheck: true,
+    scene: "同一間 A 公寓,但這次大門外面(右邊的走廊和公共走道)全是濃煙!你在左上角的臥室,客廳這次沒有煙。請畫出一條改走替代路線、到「室外集合點」的完整路線。",
+    clues: [{ title: "平面圖圖例", text: PLAN_LEGEND + "\n主要出口被擋住,就不要硬闖,改走替代路線。路線要依序經過:臥室小黃門 → 客廳 → 後門 → 後側安全梯 → 室外集合點。" }],
+    question: "按住 🧒,沿著安全的路線一路拖到綠色的「室外集合點」,紅色虛線就是你走的路。走完再按「我走到了」。",
+    base: PLAN_ALT, smoke: SPREAD_A_ALT, target: [50, 89.6], goal: [3, 82.5, 97, 97], tolerance: 10, start: [15, 14], marker: "🧒", confirmLabel: "我走到了",
+    goalMsg: "路線還沒走到室外集合點(最下方的綠色長條)。逃出來之後要一路走到集合點,才算平安!",
+    gates: [
+      { r: [9,21,21,29], msg: "路線要先從臥室的小黃門走出去,不能穿牆喔!" },
+      { r: [13,58,24,67], msg: "替代路線要經過客廳下方的「後門」喔!" }
+    ],
+    mistakeOf: (g) => { const d = planDanger(g); if (d) return d; const p = planPos(g); if (planIn(p, 45, 22, 95, 46)) return "🚨 迷思警報!主要出口有濃煙,不能硬闖。要改走沒有煙的替代路線。"; return ""; },
+    hints: [
+      "大門外的走廊右半邊和公共走道都有濃煙,不能走。平面圖左下方客廳的牆上,還有另一個黃色小門「後門」。",
+      "路線:從臥室小黃門出來,走廊左半邊沒有煙,往下進入客廳,走到客廳下方偏左的「後門」。",
+      "出了後門是「後側安全梯」,下樓後一直往下,走到最下方綠色的「室外集合點」。"
+    ],
+    success: "你找到替代路線,從後門逃出來,平安到達集合點!",
+    explanation: "主要出口不安全時,要改走替代路線,所以家裡要事先規劃兩條逃生路線。逃出後要到約好的集合點,不再回頭。" },
+  { type: "locate", title: "第二關-3:B 公寓,走廊直向", routeCheck: true,
+    scene: "【逃生路線大考驗・B 公寓】這是格局不同的另一間公寓。你在左上角的主臥室。客廳(右上方)著火,冒出大量濃煙!請畫出一條從臥室到「室外集合點」的完整逃生路線。",
+    clues: [{ title: "平面圖圖例", text: PLAN_LEGEND + "\n這間公寓的走廊是直的,大門在走廊最下面。路線要依序經過:臥室小黃門 → 走廊 → 大門 → 安全梯 → 室外集合點。" }],
+    question: "按住 🧒,沿著安全的路線一路拖到綠色的「室外集合點」,紅色虛線就是你走的路。走完再按「我走到了」。",
+    base: PLAN_B_MAIN, smoke: SPREAD_B_MAIN, target: [50, 89.6], goal: [3, 82.5, 97, 97], tolerance: 10, start: [15.7, 18], marker: "🧒", confirmLabel: "我走到了",
+    goalMsg: "路線還沒走到室外集合點(最下方的綠色長條)。逃出來之後要一路走到集合點,才算平安!",
+    gates: [
+      { r: [24,12,33,26], msg: "路線要先從臥室的小黃門走出去,不能穿牆喔!" },
+      { r: [29,58,38,67], msg: "路線要沿走廊一路往下,經過走廊最下面的「大門」喔!" },
+      { r: [48,66,66,76], msg: "下樓要走「安全梯」,不能搭電梯。路線要經過安全梯!" }
+    ],
+    mistakeOf: (g) => planDangerB(g),
+    hints: [
+      "先看平面圖:火和濃煙在右上方的客廳。左邊中間是浴室。中間直向的「走廊」沒有煙,從上通到下。",
+      "路線:從主臥室右邊的小黃門出來進走廊,沿走廊一直往下到「大門」;不進客廳、不躲浴室。",
+      "出大門後往右走到「安全梯」(不是左邊的電梯),下樓後一直往下,走到最下方綠色的「室外集合點」。"
+    ],
+    success: "不同格局的房子,逃生原則一樣,你平安到達集合點!",
+    explanation: "不管在哪間公寓,火災時都要走安全梯,不搭電梯。進門就要先看清楚主要出口在哪裡。" },
+  { type: "locate", title: "第二關-4:B 公寓,大門和走道都有濃煙", routeCheck: true,
+    scene: "同一間 B 公寓,但這次走廊下方的大門和公共走道全是濃煙,不能走!客廳還是著火。右邊有一個陽台,陽台外有一座逃生梯。請畫出一條改走替代路線、到「室外集合點」的完整路線。",
+    clues: [{ title: "平面圖圖例", text: PLAN_LEGEND + "\n這間公寓的替代路線要經過廚房。路線要依序經過:臥室小黃門 → 走廊 → 廚房 → 陽台 → 外側逃生梯 → 室外集合點。" }],
+    question: "按住 🧒,沿著安全的路線一路拖到綠色的「室外集合點」,紅色虛線就是你走的路。走完再按「我走到了」。",
+    base: PLAN_B_ALT, smoke: SPREAD_B_ALT, target: [50, 89.6], goal: [3, 82.5, 97, 97], tolerance: 10, start: [15.7, 18], marker: "🧒", confirmLabel: "我走到了",
+    goalMsg: "路線還沒走到室外集合點(最下方的綠色長條)。逃出來之後要一路走到集合點,才算平安!",
+    gates: [
+      { r: [24,12,33,26], msg: "路線要先從臥室的小黃門走出去,不能穿牆喔!" },
+      { r: [35,37,43,53], msg: "路線要經過走廊右邊通往廚房的黃色小門喔!" },
+      { r: [66,42,74,57], msg: "路線要經過廚房通往陽台的黃色小門喔!" },
+      { r: [82,45,88,59], msg: "陽台外面有逃生梯,路線要走到右邊的逃生梯喔!" }
+    ],
+    mistakeOf: (g) => { const d = planDangerB(g); if (d) return d; const p = planPos(g); if (planIn(p, 26, 55, 42, 72)) return "🚨 迷思警報!大門外有濃煙,不能硬闖。要改走沒有煙的替代路線。"; if (planIn(p, 44, 62, 72, 80)) return "🚨 公共走道也有濃煙,不能走。要找另一條路。"; return ""; },
+    hints: [
+      "大門在走廊最下面,下方的公共走道都是濃煙。看平面圖右邊:廚房旁邊有「陽台」,陽台外面是「逃生梯」。",
+      "路線:從主臥室出來進走廊,往下走到中間,走廊右邊有黃色小門通往廚房;穿過廚房走到陽台;不進上面的客廳(有火)。",
+      "再從陽台右邊的小門走到外側「逃生梯」,往下之後走到最下方綠色的「室外集合點」。"
+    ],
+    success: "你找到替代路線,從陽台和逃生梯平安逃出來,到達集合點!",
+    explanation: "主要出口不安全時,要改走替代路線。有陽台和逃生梯的房子,陽台可以是替代路線。"
+    , reward: ["badge2"] },
+
+  { type: "choice", title: "第二關-5:所有出口都有濃煙",
+    scene: "這次更危險:你被困在房間裡,房門外和另一邊的門都有濃煙,也沒有其他路可以走。",
+    art: ART_TRAPPED,
+    clues: [{ title: "兩種應變方式", text: "①還有安全的路:往安全的出口逃生。\n②沒有安全的路:關門避難、求救、等待救援。\n目標不是不顧一切走到出口,而是保護自己的平安。" }],
+    question: "下一步該怎麼辦?",
+    choices: [
+      "用力衝過濃煙",
+      "躲進浴室",
+      "搭電梯下樓",
+      "關門、用濕布塞住門縫,到窗邊求救並撥打 119,等待救援"
+    ],
+    answerIndex: 3,
+    hints: ["衝過濃煙安全嗎?", "沒有安全的路,就要保護自己。", "關門擋住煙,再向外求救。"],
+    mistakes: {
+      "用力衝過濃煙": "🚨 迷思警報!硬闖濃煙很危險,不要這樣做。",
+      "躲進浴室": "🚨 迷思警報!浴室通常沒有出口,而且很難被找到。",
+      "搭電梯下樓": "🚨 迷思警報!火災時不要搭電梯。"
+    },
+    success: "你冷靜地關門避難,等到消防員來救援!",
+    explanation: "出口有濃煙時:還有安全的路就逃生;沒有就關門避難、塞住門縫、到窗邊求救並撥打 119,等待救援。" },
+
+  { type: "choice", title: "迷思破解-1:一定要往上跑?",
+    scene: "你住在高樓層(圖中標「你」的位置),大樓失火了。有人說:「一定要往上跑到屋頂!」",
+    art: ART_TOWER,
+    question: "下面哪個才對?",
+    choices: [
+      "一定要往上跑到屋頂",
+      "留在原地,什麼都不做",
+      "優先往下逃;下方被火或濃煙擋住時,才改找安全避難處並求救"
+    ],
+    answerIndex: 2,
+    hints: ["「一定」這兩個字對嗎?", "火和煙會往上跑。", "一般優先往下逃。"],
+    mistakes: {
+      "一定要往上跑到屋頂": "🚨 迷思警報!屋頂的門可能鎖住,往上跑也可能越靠近濃煙。",
+      "留在原地,什麼都不做": "不能什麼都不做,要想辦法離開,或關門避難並求救。"
+    },
+    success: "答對了!你破解了高樓迷思。",
+    explanation: "高樓失火:一般優先往下逃。下方被擋住時,再依狀況避難求救,不是「一定往上」。" },
+
+  { type: "choice", title: "迷思破解-2:塑膠袋裝空氣?",
+    scene: "房間裡煙很濃(灰色的部分是煙),你覺得呼吸困難。同學說:「用塑膠袋套住頭,裡面有空氣!」",
+    art: ART_SMOKE,
+    question: "下面哪個做法最安全?",
+    choices: [
+      "用塑膠袋套住頭,裡面有空氣",
+      "壓低姿勢、遠離濃煙,並用濕毛巾摀住口鼻",
+      "用塑膠袋蓋住口鼻",
+      "躲進衣櫃裡"
+    ],
+    answerIndex: 1,
+    hints: ["塑膠袋裡的空氣能用多久?", "圖中的煙在上面,那下面的空氣呢?", "壓低姿勢、濕毛巾摀口鼻。"],
+    mistakes: {
+      "用塑膠袋套住頭,裡面有空氣": "🚨 迷思警報!塑膠袋裡的空氣很快會用完,反而更難呼吸。",
+      "用塑膠袋蓋住口鼻": "🚨 迷思警報!塑膠袋不能過濾煙,也會讓你呼吸不到新鮮空氣。",
+      "躲進衣櫃裡": "躲進衣櫃很難被找到,也擋不住煙。"
+    },
+    success: "答對了!你破解了塑膠袋迷思。",
+    explanation: "煙很濃時:壓低姿勢、遠離濃煙,用濕毛巾摀住口鼻;不要用塑膠袋套頭。" },
+
+  { type: "choice", title: "迷思破解-3:濕毛巾就能闖過濃煙?",
+    scene: "走廊右半邊有濃煙,小華拿著濕毛巾說:「我有濕毛巾,可以直接衝過去!」",
+    art: ART_HALL,
+    question: "你覺得呢?",
+    choices: [
+      "不硬闖濃煙,退回房間關門避難並求救",
+      "有濕毛巾就可以穿越濃煙",
+      "把毛巾弄乾再衝"
+    ],
+    answerIndex: 0,
+    hints: ["濕毛巾的功能是什麼?", "它擋得住毒氣和高溫嗎?", "不要硬闖。"],
+    mistakes: {
+      "有濕毛巾就可以穿越濃煙": "🚨 迷思警報!濕毛巾只能稍微減少煙塵,擋不住毒氣和高溫,不能拿來硬闖濃煙。",
+      "把毛巾弄乾再衝": "乾毛巾更沒有用,而且不應該衝進濃煙裡。"
+    },
+    success: "答對了!你拿到迷思終結者徽章!",
+    reward: ["badge3"],
+    explanation: "濕毛巾可以輔助摀口鼻,但「有濕毛巾就能衝過濃煙」是迷思。不要硬闖濃煙。" },
+
+  // ===== 最後:家庭逃生路線圖 =====
+  { type: "multi", title: "最後一關:家庭逃生路線圖",
+    scene: "你學會了判斷逃生路線。現在,回家要和家人一起畫一張家庭逃生路線圖!先看看這張空白的房子。",
+    art: ART_MAPQ,
+    question: "家庭逃生路線圖一定要標出哪些東西?(可複選)",
+    choices: ["沙發的位置", "主要出口", "替代路線", "集合點"],
+    answerIndexes: [1, 2, 3],
+    mistakeOf: (g) => {
+      if (/沙發/.test(g)) return "沙發不是逃生路線的重點,不用特別標示。";
+      if (!/替代路線/.test(g)) return "還少了替代路線!主要出口可能被火或煙擋住。";
+      if (!/集合點/.test(g)) return "還少了集合點!逃出去之後,要在約好的地方集合、確認大家平安。";
+      if (!/主要出口/.test(g)) return "還少了主要出口!";
+      return "";
+    },
+    hints: ["路線圖要標出「從哪裡逃」。", "主要出口可能被擋住,所以還需要什麼?", "逃出去後要去哪裡集合?"],
+    success: "太棒了!今天回家就和家人一起畫路線圖吧!",
+    reward: ["badge4"],
+    explanation: "逃生路線圖要標示:主要出口、替代路線、集合點。大家要一起畫、一起練習。" }
+];
+
+function summaryRows(info) {
+  const n = info.levelsPassed;
+  const got = [];
+  if (n >= 5) got.push("🏅 安全徽章");
+  if (n >= 13) got.push("🎖️ 安全判斷徽章");
+  if (n >= 17) got.push("🛡️ 迷思終結者徽章");
+  if (n >= 18) got.push("🗺️ 逃生規劃家徽章");
+  const mins = Math.floor(info.durationSec / 60);
+  const secs = info.durationSec % 60;
+  const rows = [
+    ["玩家", info.playerName],
+    ["通過關卡", `${info.levelsPassed} / ${info.totalLevels}`],
+    ["獲得徽章", got.length ? got.join("、") : "還沒有,再加油!"],
+    ["答錯次數", String(info.wrongCount)],
+    ["看了幾層提示", String(info.hintsUsed)]
+  ];
+  if (GAME.showStars) rows.push(["獲得星星", `${info.totalStars} / ${info.totalLevels * 3}`]);
+  rows.push(["花費時間", `${mins} 分 ${secs} 秒`]);
+  return rows;
+}
+
+const GAME = {
+  title: "🔥 火災逃生闖關",
+  desc: "拖曳標記選逃生路線,闖過兩間不同格局的公寓,破解火災逃生迷思!",
+  story: "放學後,社區兩棟公寓的警報同時響了!你是小小消防安全員,得靠冷靜的判斷,幫家人找出最安全的逃生路線。兩間公寓的格局不一樣,要先看清楚平面圖。小心「迷思警報」,它會提醒你哪些做法很危險。收集 4 枚徽章,成為逃生小英雄!",
+  ending: "恭喜你!你在兩間不同格局的公寓都平安逃出,還學會了判斷出口、走替代路線、破解迷思。今天回家,記得和家人一起畫一張逃生路線圖,再練習一次喔!",
+  failStory: "時間到了或愛心用完了,但沒關係!逃生技能多練習幾次就會熟練。再試一次,你一定可以!",
+  endTitle: "逃生成功!",
+  theme: "warm",
+  icon: "🚒",
+  lives: 5,
+  timeLimit: 1500,
+  failTo: "level",
+  showStars: true,
+  teacherNotes: "【學習目標】\n1. 說出火災時的基本避難原則:通知家人、低姿勢、不躲浴室、不搭電梯、不重返火場、撥打 119。\n2. 辨別 5 項常見迷思,並說明原因。\n3. 判斷出口是否安全;出口有濃煙時,知道兩種應變:改走替代路線,或關門避難並等待救援。\n4. 看懂不同格局的平面圖,並規劃家庭逃生路線圖(主要出口、替代路線、集合點)。\n\n【課前準備】\n先簡單說明什麼是「主要出口」和「替代路線」,並教學生看平面圖圖例(黃色=門、橘色=火、灰色=煙、綠色=集合點)。提醒學生:遊戲只是練習,真實火災時要立刻離開並求救。\n\n【遊戲設定】\n每位學生 5 顆愛心,全程 25 分鐘倒數。答錯會顯示原因,可重新作答。時間到或愛心用完,會從失敗的那一關重來。每個路線題都有三層提示,第三層會直接說出位置。\n\n【玩完後的討論】\n1. 哪些選項會出現「迷思警報」?你原本是怎麼想的?\n2. A、B 兩間公寓的格局不同,逃生路線有什麼一樣、什麼不一樣?\n3. 如果大門有濃煙,你家還有哪一條路可以走?\n4. 你家的集合點在哪裡?家人都知道嗎?\n5. 回家後,和家人一起畫逃生路線圖,下次上課帶來分享。\n\n(各題的迷思說明與參考答案,請見另附的「教師說明頁」。)"
+};
+
+/* build.js:GAME 沒寫的設定用預設值 */
+Object.entries({ theme: "cute", lives: 0, timeLimit: 0, failTo: "level", shuffleChoices: true, showStars: true, sound: true, endTitle: "全部過關!" })
+  .forEach(([k, v]) => { if (GAME[k] === undefined) GAME[k] = v; });
+/* ===== RULES-PACK:END ===== */
+</script>
+
+<script>
+
+/* =========================================================
+   第三部分:遊戲流程(引擎)—— 通常不需要修改
+   引擎負責:關卡狀態機、進度、愛心、倒數、星星、線索、道具、提示、音效、存檔與續玩、結算、上傳成績。
+   每一關的作答畫面由「題型」負責(內建十一種,可在第二部分新增)。
+   ========================================================= */
+
+/* 遊戲狀態(不要改既有欄位名稱,底下的函式都依賴這些欄位) */
+let state = {
+  currentLevel: 0,
+  correctCount: 0,
+  wrongCount: 0,
+  startTime: null,
+  playerName: "",
+  lives: 0,        // 剩幾顆愛心(GAME.lives 大於 0 時才有意義)
+  levelWrong: 0,   // 目前這一關答錯幾次(給星星用)
+  stars: [],       // 每個已通過的關卡拿到幾顆星
+  items: [],       // 已經拿到的道具 id
+  hintsUsed: 0,    // 整場看了幾層提示
+  levelHints: 0,   // 目前這一關看了幾層提示
+  timeLeft: 0      // 倒數剩幾秒(GAME.timeLimit 大於 0 時才有意義)
+};
+
+const el = (id) => document.getElementById(id);
+const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+const escapeHtml = (s) => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+const isText = (s) => typeof s === "string" && !!s.trim();
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+const ITEM_DEFS = (typeof ITEMS !== "undefined" && ITEMS) ? ITEMS : {};
+const THEMES = ["cute", "warm", "parchment", "scifi", "terminal"];
+const hintsOf = (level) => (Array.isArray(level.hints) && level.hints.length) ? level.hints : (level.hint ? [level.hint] : []);
+const itemLabel = (id) => { const it = ITEM_DEFS[id] || {}; return `${it.icon ? it.icon + " " : ""}${it.name || id}`; };
+
+/* ---------- 規則的預設版本 ----------
+   第二部分沒有寫某個函式時,引擎改用這裡的版本。引擎一律透過 rule("名稱", ...參數) 呼叫 */
+const DEFAULT_RULES = {
+  levelStars(wrongTries, level, hintsUsed) {
+    const n = wrongTries + Math.max(0, (hintsUsed || 0) - 1);
+    return n === 0 ? 3 : n === 1 ? 2 : 1;
+  },
+  summaryRows(info) {
+    const rows = [["玩家", info.playerName], ["通過關卡", `${info.levelsPassed} / ${info.totalLevels}`], ["答錯次數", String(info.wrongCount)]];
+    if (LEVELS.some(lv => hintsOf(lv).length > 1)) rows.push(["看了幾層提示", String(info.hintsUsed)]);
+    if (GAME.showStars) rows.push(["獲得星星", `${info.totalStars} / ${info.totalLevels * 3}`]);
+    rows.push(["花費時間", `${info.durationSec} 秒`]);
+    return rows;
+  },
+  validateRules() { return { errors: [], warnings: [] }; }
+};
+function rule(name, ...args) {
+  const fn = typeof window[name] === "function" ? window[name] : DEFAULT_RULES[name];
+  return fn(...args);
+}
+
+/* ---------- 音效(Web Audio 合成,不用音檔)與浮動訊息 ---------- */
+let audioCtx = null;
+let soundOn = GAME.sound !== false;
+function tone(freq, dur = 0.15, type = "sine", vol = 0.08, delay = 0) {
+  if (!soundOn) return;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    audioCtx = audioCtx || new AC();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    const t = audioCtx.currentTime + delay, osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t);
+    gain.gain.setValueAtTime(vol, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + dur);
+  } catch (e) { /* 沒有聲音不影響遊戲 */ }
+}
+/* 每個音效是一串 [頻率, 秒數, 延遲, 波形] */
+const SFX = {
+  click: [[700, 0.05]],
+  right: [[523, 0.15], [659, 0.15, 0.1], [784, 0.3, 0.2]],
+  wrong: [[180, 0.2, 0, "sawtooth"], [140, 0.25, 0.15, "sawtooth"]],
+  item:  [[880, 0.1], [1175, 0.25, 0.08]],
+  win:   [[523, 0.15], [659, 0.15, 0.12], [784, 0.15, 0.24], [1047, 0.5, 0.36]],
+  fail:  [[300, 0.3, 0, "triangle"], [220, 0.3, 0.25, "triangle"], [150, 0.6, 0.5, "triangle"]]
+};
+function sfx(name) { (SFX[name] || []).forEach(([f, d, delay, type]) => tone(f, d, type || "sine", 0.08, delay || 0)); }
+function toast(msg) {
+  const t = mk("div", "toast", msg);
+  t.setAttribute("role", "status");
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+
+/* ---------- 內建題型 ---------- */
+const confirmBtn = (lv) => mk("button", "btn-primary btn-confirm", (lv && lv.confirmLabel) || "✓ 確認");
+const isNum = (n) => typeof n === "number" && Number.isFinite(n);
+
+/* 轉輪鎖:把答案拆成每個轉輪的答案,並決定每個轉輪有哪些選項 */
+function dialParts(lv) {
+  const ans = Array.isArray(lv.answer) ? lv.answer.map(String) : String(lv.answer).split("");
+  const preset = ans.every(a => /^[0-9]$/.test(a)) ? "0123456789".split("")
+    : ans.every(a => /^[A-Z]$/.test(a)) ? "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("") : null;
+  const w = lv.wheels;
+  const wheels = ans.map((_, i) => !Array.isArray(w) ? preset : (Array.isArray(w[0]) ? w[i] : w));
+  return { ans, wheels: wheels.map(o => Array.isArray(o) ? o.map(String) : o) };
+}
+/* 轉輪之間的分隔字:sep 是字串時每兩個轉輪之間都放;是陣列時 sep[0] 放在第 1、2 個轉輪之間… */
+const sepAt = (lv, i) => Array.isArray(lv.sep) ? String(lv.sep[i - 1] || "") : (lv.sep || "");
+/* 玩家轉出來的樣子(例如 "上午10:00"),給 mistakes 比對 */
+const dialKey = (lv, vals) => vals.map((v, i) => (i ? sepAt(lv, i) : "") + v).join("");
+/* 計數、滑桿共用:數值範圍 */
+function rangeOf(lv, defMax) {
+  const min = isNum(lv.min) ? lv.min : 0, max = isNum(lv.max) ? lv.max : defMax, step = isNum(lv.step) ? lv.step : 1;
+  return { min, max, step, start: isNum(lv.start) ? lv.start : min };
+}
+function validateRange(lv, defMax) {
+  if (!isNum(lv.answer)) return ["answer 要是數字(不要加引號)"];
+  const { min, max, step, start } = rangeOf(lv, defMax), e = [];
+  if (!(min < max)) e.push("min 要比 max 小");
+  if (!(step > 0)) e.push("step 要大於 0");
+  if (e.length) return e;
+  if (lv.answer < min || lv.answer > max) e.push(`answer(${lv.answer})要在 ${min} 到 ${max} 之間`);
+  if (start < min || start > max) e.push(`start(${start})要在 ${min} 到 ${max} 之間`);
+  const off = Math.abs((lv.answer - start) / step);
+  if (!(lv.tolerance > 0) && Math.abs(off - Math.round(off)) > 1e-9) e.push(`從 ${start} 每次加減 ${step},到不了 answer(${lv.answer})`);
+  return e.length ? e : { errors: [], warnings: start === lv.answer ? ["一開始的數值就是答案,用 start 換一個起點"] : [] };
+}
+const fmtNum = (n) => String(Math.round(n * 1000) / 1000);
+
+/* 旋轉水管共用:方向 0 上、1 右、2 下、3 左。沒轉的時候 I 開口是上下、L 是上右、T 是上右下 */
+const PIPE_SHAPES = { I: [0, 2], L: [0, 1], T: [0, 1, 2] };
+const PIPE_NAMES = { I: "直管", L: "彎管", T: "三通管" };
+const pipeOpenings = (kind, rot) => PIPE_SHAPES[kind].map(d => (d + rot) % 4);
+/* 照規則算水流到哪裡。回傳 { wet: 有水的格子, problem: 沒過關的原因("" = 過關) } */
+function pipeFlow(lv, rots) {
+  const n = lv.size, last = n * n - 1, wet = new Set();
+  const open = (i) => pipeOpenings(lv.tiles[i], rots[i] % 4);
+  let leak = false, out = false;
+  if (open(0).includes(0)) {
+    const todo = [0];
+    wet.add(0);
+    while (todo.length) {
+      const i = todo.pop();
+      open(i).forEach(d => {
+        if (i === 0 && d === 0) return;                    // 入口
+        if (i === last && d === 2) { out = true; return; } // 出口
+        const r = Math.floor(i / n) + [-1, 0, 1, 0][d], c = i % n + [0, 1, 0, -1][d];
+        if (r < 0 || c < 0 || r >= n || c >= n) { leak = true; return; }
+        const j = r * n + c;
+        if (!open(j).includes((d + 2) % 4)) { leak = true; return; }
+        if (!wet.has(j)) { wet.add(j); todo.push(j); }
+      });
+    }
+  }
+  const missed = (lv.valves || []).filter(i => !wet.has(i)).length;
+  const problem = (lv.shocks || []).some(i => wet.has(i)) ? "⚡ 接到危險的那一格了!"
+    : !wet.size ? "左上角的管子沒有接上入口"
+    : leak ? "有開口沒接上,漏出來了"
+    : !out ? "還沒接到右下角的出口"
+    : missed ? `還有 ${missed} 個閥門沒有接通` : "";
+  return { wet, problem };
+}
+
+/* ---------- 拖曳 ----------
+   dragToSlot:把物件拖到 .slot 上放下。原本「點物件、再點格子」的操作照樣可以用(鍵盤和自動試玩走這條)。
+   用 Pointer Events,滑鼠和手指都能拖;拖完放開時瀏覽器還會送一次 click,用 wasDrag() 忽略 */
+let dragJustEnded = 0;
+const wasDrag = () => Date.now() - dragJustEnded < 300;
+function dragToSlot(chip, onDrop) {
+  chip.style.touchAction = "none";
+  chip.classList.add("draggable");
+  chip.addEventListener("pointerdown", (e) => {
+    if (chip.disabled || e.button > 0) return;
+    const x0 = e.clientX, y0 = e.clientY;
+    let ghost = null, hover = null;
+    const slotAt = (x, y) => { const t = document.elementFromPoint && document.elementFromPoint(x, y); return t ? t.closest(".slot") : null; };
+    const move = (ev) => {
+      if (!ghost) {
+        if (Math.hypot(ev.clientX - x0, ev.clientY - y0) < 6) return;     // 移動不到 6px 當作點選
+        ghost = chip.cloneNode(true);
+        ghost.classList.add("drag-ghost");
+        document.body.appendChild(ghost);
+        chip.classList.add("dragging");
+      }
+      ev.preventDefault();
+      ghost.style.left = ev.clientX + "px";
+      ghost.style.top = ev.clientY + "px";
+      const s = slotAt(ev.clientX, ev.clientY);
+      if (s !== hover) { if (hover) hover.classList.remove("drop-hover"); hover = s; if (s) s.classList.add("drop-hover"); }
+    };
+    const end = (ev) => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("pointercancel", end);
+      if (!ghost) return;
+      ghost.remove();
+      chip.classList.remove("dragging");
+      if (hover) hover.classList.remove("drop-hover");
+      dragJustEnded = Date.now();
+      const s = ev.type === "pointerup" ? slotAt(ev.clientX, ev.clientY) : null;
+      if (s && !s.disabled) onDrop(s);
+    };
+    window.addEventListener("pointermove", move, { passive: false });
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
+  });
+}
+
+/* 疊圖 / 定位共用:base 是底圖,上面疊一個可以拖的圖層(overlay)。
+   位置一律用「底圖寬、高的百分比」,記的是圖層的中心點。鍵盤:點一下圖層後用方向鍵移動(Shift 一次 5%) */
+const isPos = (p) => Array.isArray(p) && p.length === 2 && p.every(v => isNum(v) && v >= 0 && v <= 100);
+const near = (p, t, tol) => Math.hypot(p[0] - t[0], p[1] - t[1]) <= tol;
+function validateAlign(a, prefix) {
+  const e = [];
+  if (!a || typeof a !== "object") return [`${prefix}要是物件`];
+  if (!isText(a.base)) e.push(`${prefix}base 要寫底圖的 HTML(通常是行內 SVG)`);
+  if (!isPos(a.target)) e.push(`${prefix}target 要是 [左右%, 上下%],0~100`);
+  if (a.start !== undefined && !isPos(a.start)) e.push(`${prefix}start 要是 [左右%, 上下%],0~100`);
+  if (a.size !== undefined && !(isNum(a.size) && a.size > 0 && a.size <= 100)) e.push(`${prefix}size 是圖層寬度佔底圖的百分比(1~100)`);
+  if (a.tolerance !== undefined && !(isNum(a.tolerance) && a.tolerance > 0)) e.push(`${prefix}tolerance 要是大於 0 的數字(百分比)`);
+  if (!e.length && near(a.start || [15, 15], a.target, a.tolerance || 4)) e.push(`${prefix}start 離 target 太近,一開始就對好了`);
+  return e;
+}
+function alignWidget(cfg, onMove) {
+  const box = mk("div", "align-box");
+  box.innerHTML = cfg.base;                       // 出題者自己寫的插圖
+  const ov = mk("div", "align-overlay");
+  ov.innerHTML = cfg.trail ? '<span class="idle-jig">' + (cfg.overlay || "") + '</span>' : (cfg.overlay || '<div class="align-pin">📍</div>');
+  ov.tabIndex = 0;
+  ov.setAttribute("role", "button");
+  ov.setAttribute("aria-label", `${cfg.label || "可以拖動的圖層"},用方向鍵移動`);
+  ov.style.width = (cfg.size || 30) + "%";
+  if (cfg.trail) { ov.style.width = "max-content"; ov.style.fontSize = "1.8rem"; ov.style.lineHeight = "1"; ov.style.padding = "6px"; ov.style.textAlign = "center"; }
+  box.appendChild(ov);
+  const pos = (cfg.start || [15, 15]).slice();
+  const clk = cfg.clock || (() => 0);
+  const path = [pos.concat([0])];               // [左右%, 上下%, 第幾秒]                     // 走過的路線(每個點是底圖寬高的百分比)
+  let line = null;
+  if (cfg.trail) {
+    const NS = "http://www.w3.org/2000/svg";
+    const tr = document.createElementNS(NS, "svg");
+    tr.setAttribute("class", "align-trail"); tr.setAttribute("viewBox", "0 0 100 100"); tr.setAttribute("preserveAspectRatio", "none"); tr.setAttribute("aria-hidden", "true");
+    line = document.createElementNS(NS, "polyline");
+    tr.appendChild(line);
+    box.insertBefore(tr, ov);
+  }
+  const drawTrail = () => { if (line) line.setAttribute("points", path.concat([pos]).map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ")); };
+  const addPoint = () => { if (!cfg.trail) return; const l = path[path.length - 1]; if (Math.hypot(pos[0] - l[0], pos[1] - l[1]) >= 0.8) path.push([pos[0], pos[1], clk()]); drawTrail(); };
+  let locked = false;
+  const clamp = (v) => Math.max(0, Math.min(100, v));
+  const place = () => { ov.style.left = pos[0] + "%"; ov.style.top = pos[1] + "%"; ov.dataset.x = pos[0]; ov.dataset.y = pos[1]; };
+  ov.addEventListener("pointerdown", (e) => {
+    if (locked || e.button > 0) return;
+    const r = box.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    e.preventDefault();
+    if (cfg.trail) path.push([pos[0], pos[1], clk()]);        // 記下「站在原地」待了多久
+    const x0 = e.clientX, y0 = e.clientY, p0 = pos.slice();
+    if (ov.setPointerCapture) ov.setPointerCapture(e.pointerId);
+    ov.classList.add("dragging");
+    const move = (ev) => { pos[0] = clamp(p0[0] + (ev.clientX - x0) / r.width * 100); pos[1] = clamp(p0[1] + (ev.clientY - y0) / r.height * 100); place(); addPoint(); };
+    const end = () => {
+      ov.removeEventListener("pointermove", move);
+      ov.removeEventListener("pointerup", end);
+      ov.removeEventListener("pointercancel", end);
+      ov.classList.remove("dragging");
+      if (cfg.trail) { const l = path[path.length - 1]; if (l[0] !== pos[0] || l[1] !== pos[1]) { path.push([pos[0], pos[1], clk()]); drawTrail(); } }
+      onMove(pos);
+    };
+    ov.addEventListener("pointermove", move);
+    ov.addEventListener("pointerup", end);
+    ov.addEventListener("pointercancel", end);
+  });
+  ov.addEventListener("keydown", (e) => {
+    const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+    if (locked || !d) return;
+    e.preventDefault();
+    const k = e.shiftKey ? 5 : 1;
+    pos[0] = clamp(pos[0] + d[0] * k);
+    pos[1] = clamp(pos[1] + d[1] * k);
+    place();
+    addPoint();
+    onMove(pos);
+  });
+  place();
+  return { box, ov, pos, place, path,
+    extend(t) { pos[0] = t[0]; pos[1] = t[1]; path.push([t[0], t[1], clk()]); drawTrail(); place(); },
+    reset() { const st = cfg.start || [15, 15]; pos[0] = st[0]; pos[1] = st[1]; path.splice(1); path[0][2] = 0; drawTrail(); place(); },
+    lock(v) { locked = v; ov.classList.toggle("locked", v); ov.tabIndex = v ? -1 : 0; } };
+}
+
+/* 路線檢查:沿路線每 1% 取一點。①不能經過 mistakeOf 判定的危險區 ②gates 的門要「依序」經過 ③有 goal 時,終點要在集合點範圍內 */
+function routeProblem(lv, path) {
+  if (!lv.routeCheck || !path || path.length < 2) return "";
+  const pts = [];
+  for (let i = 1; i < path.length; i++) {
+    const a = path[i - 1], b = path[i], n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1])));
+    for (let k = 1; k <= n; k++) pts.push([a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n, a[2] + (b[2] - a[2]) * k / n]);
+  }
+  const inR = (p, r) => p[0] >= r[0] && p[0] <= r[2] && p[1] >= r[1] && p[1] <= r[3];
+  if (lv.smoke) for (const p of pts) { const q = smokeRoomAt(lv.smoke, p[0], p[1]); if (q && p[2] >= q.t) return smokeMsg(q); }
+  if (typeof lv.mistakeOf === "function") {
+    for (const p of pts) { let m = ""; try { m = lv.mistakeOf(p[0].toFixed(1) + "," + p[1].toFixed(1)); } catch (e) { m = ""; } if (m) return "🚨 你的路線經過了危險的地方!\n" + m.replace(/^🚨\s*(迷思警報!)?/, ""); }
+  }
+  let i = 0;
+  for (const g of (lv.gates || [])) {
+    const j = pts.findIndex((p, k) => k >= i && inR(p, g.r));
+    if (j < 0) return g.msg;
+    i = j;
+  }
+  if (lv.goal && !inR(pts[pts.length - 1], lv.goal)) return lv.goalMsg || "路線還沒走到室外集合點,要一路走到綠色長條才算完成!";
+  return "";
+}
+
+const BUILTIN_TYPES = {
+
+  /* 定位:把標記拖到底圖上正確的位置(在地圖上指出某個經緯度、在圖上找出某個部位),按確認才檢查 */
+  locate: {
+    validate(lv) {
+      return validateAlign({ base: lv.base, target: lv.target, start: lv.start, size: lv.size, tolerance: lv.tolerance }, "");
+    },
+    render(lv, ctx) {
+      let touched = false, done = false;
+      let t0 = performance.now();
+      const clock = () => (performance.now() - t0) / 1000;      // 這一題開始後過了幾秒(煙的時間也是從這裡算)
+      const w = alignWidget({ base: lv.base, overlay: lv.marker, start: lv.start, size: lv.size || 12, label: lv.markerLabel || "標記", trail: true, clock }, () => { touched = true; });
+      const ok = confirmBtn(lv);
+      const restart = () => {                                    // 答錯後:小人回起點,煙從頭擴散
+        t0 = performance.now(); touched = false; w.reset(); w.box.classList.remove("danger");
+        const bs = w.box.querySelector("svg:not(.align-trail)"); if (bs) bs.outerHTML = bs.outerHTML;
+      };
+      const finish = (right, given) => {
+        w.lock(true); ok.disabled = true;
+        if (right) { done = true; if (!lv.goal) w.extend(lv.target); }
+        ctx.answer(right, given).then(() => { if (!right) restart(); w.lock(false); ok.disabled = false; });
+      };
+      ok.addEventListener("click", () => {
+        if (!touched || ok.disabled) return;
+        const atGoal = lv.goal ? (w.pos[0] >= lv.goal[0] && w.pos[0] <= lv.goal[2] && w.pos[1] >= lv.goal[1] && w.pos[1] <= lv.goal[3]) : near(w.pos, lv.target, lv.tolerance || 5);
+        const routeMsg = routeProblem(lv, w.path);                          // 整條路線有沒有走錯、來不及
+        let given = `${Math.round(w.pos[0])},${Math.round(w.pos[1])}`;      // 給 mistakeOf 判斷終點放在哪一區
+        if (routeMsg) given = "ROUTE|" + routeMsg;
+        finish(atGoal && !routeMsg, given);
+      });
+      const watch = setInterval(() => {                          // 小人還站在原地或走得太慢:煙到了就被困住
+        if (!w.box.isConnected) return clearInterval(watch);
+        if (done || ok.disabled || !lv.smoke) return;
+        const q = smokeRoomAt(lv.smoke, w.pos[0], w.pos[1]);
+        const left = q ? q.t - clock() : Infinity;
+        w.box.classList.toggle("danger", left < 15);             // 煙快到你這間房了:畫面邊框閃紅
+        if (left <= 0) finish(false, "ROUTE|" + smokeMsg(q));
+      }, 400);
+      const rs = mk("button", "chip align-reset", "↩ 重畫路線");
+      rs.addEventListener("click", () => { if (ok.disabled) return; touched = false; w.reset(); });
+      ctx.top.appendChild(w.box);
+      ctx.top.appendChild(mk("div", "align-tip", lv.tip || "按住標記,沿著路線拖動,會畫出你走的路線。⚠️ 煙會從起火的房間慢慢擴散到其他房間,要在煙到你所在的房間之前離開!"));
+      ctx.top.appendChild(rs);
+      ctx.top.appendChild(ok);
+    }
+  },
+
+  /* 選擇題 */
+  choice: {
+    validate(lv) {
+      const e = [];
+      if (!Array.isArray(lv.choices) || lv.choices.length < 2) {
+        e.push("choices 至少要有 2 個選項");
+      } else {
+        if (lv.choices.some(c => !isText(c))) e.push("choices 每個選項都要是不空白的文字");
+        if (!Number.isInteger(lv.answerIndex) || lv.answerIndex < 0 || lv.answerIndex >= lv.choices.length) {
+          e.push(`answerIndex 要是 0 到 ${lv.choices.length - 1} 的整數(從 0 開始算)`);
+        }
+      }
+      return e;
+    },
+    render(lv, ctx) {
+      const order = lv.choices.map((_, i) => i);
+      const shown = (lv.shuffle !== undefined ? lv.shuffle : GAME.shuffleChoices) !== false ? shuffle(order) : order;   // 存原本的索引,answerIndex 不用改
+      const btns = shown.map(i => mk("button", "choice", lv.choices[i]));
+      const lock = (v) => btns.forEach(b => { b.disabled = v; });
+      btns.forEach((b, k) => b.addEventListener("click", () => {
+        lock(true);
+        const ok = shown[k] === lv.answerIndex;
+        b.classList.add(ok ? "correct" : "wrong");
+        ctx.answer(ok, lv.choices[shown[k]]).then(() => { b.classList.remove("wrong"); lock(false); });
+      }));
+      btns.forEach(b => ctx.top.appendChild(b));
+    }
+  },
+
+  /* 複選題:要選的全部選到、不該選的都沒選,才算對 */
+  multi: {
+    validate(lv) {
+      const e = [];
+      if (!Array.isArray(lv.choices) || lv.choices.length < 2 || lv.choices.some(c => !isText(c))) return ["choices 至少要有 2 個不空白的選項"];
+      const a = lv.answerIndexes;
+      if (!Array.isArray(a) || !a.length) e.push("answerIndexes 要是陣列,寫出所有正確選項的索引(從 0 算),例如 [0, 2]");
+      else if (a.some(i => !Number.isInteger(i) || i < 0 || i >= lv.choices.length)) e.push(`answerIndexes 裡的每個數字要是 0 到 ${lv.choices.length - 1} 的整數`);
+      else if (new Set(a).size !== a.length) e.push("answerIndexes 裡有重複的索引");
+      return e;
+    },
+    render(lv, ctx) {
+      const order = lv.choices.map((_, i) => i);
+      const shown = (lv.shuffle !== undefined ? lv.shuffle : GAME.shuffleChoices) !== false ? shuffle(order) : order;
+      const picked = new Set();
+      const ok = confirmBtn(lv);
+      const btns = shown.map(i => {
+        const b = mk("button", "choice", lv.choices[i]);
+        b.setAttribute("aria-pressed", "false");
+        b.addEventListener("click", () => {
+          picked.has(i) ? picked.delete(i) : picked.add(i);
+          b.classList.toggle("picked", picked.has(i));
+          b.setAttribute("aria-pressed", String(picked.has(i)));
+        });
+        ctx.top.appendChild(b);
+        return b;
+      });
+      const lock = (v) => { btns.forEach(b => { b.disabled = v; }); ok.disabled = v; };
+      ok.addEventListener("click", () => {
+        if (!picked.size) return;
+        lock(true);
+        const right = picked.size === lv.answerIndexes.length && lv.answerIndexes.every(i => picked.has(i));
+        ctx.answer(right, lv.choices.filter((_, i) => picked.has(i)).join("、")).then(() => lock(false));     // 答錯保留玩家的選擇,讓他修改
+      });
+      ctx.top.appendChild(ok);
+    }
+  },
+
+  /* 密碼鍵盤:答案只能用 0-9、* 和 # */
+  passcode: {
+    validate(lv) {
+      if (typeof lv.answer !== "string") return ['answer 要用字串,例如 "7" 而不是 7'];
+      if (!/^[0-9*#]+$/.test(lv.answer)) return [`answer 只能用 0-9、* 和 #(目前是 "${lv.answer}");有字母或中文請改用 text 或 dial`];
+      if (lv.slots !== undefined && !(Number.isInteger(lv.slots) && lv.slots >= lv.answer.length && lv.slots <= 8)) return [`slots 要是 ${lv.answer.length} 到 8 的整數(格子數,不能比答案短)`];
+      return [];
+    },
+    render(lv, ctx) {
+      // 電話鍵盤排列:1-9、* 0 #,最下排是刪除與確認(確認鍵佔兩格)
+      const LAYOUT = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#", "⌫", "✓"];
+      const slots = lv.slots || lv.answer.length;     // slots 可以比答案長,避免格子數洩漏答案位數
+      let input = "";
+      const display = mk("div", "passcode-display");
+      const keypad = mk("div", "keypad");
+      ctx.top.appendChild(display);
+      ctx.bottom.appendChild(keypad);
+
+      function paint() {
+        display.innerHTML = "";
+        for (let i = 0; i < slots; i++) display.appendChild(mk("div", "passcode-slot" + (input[i] ? " filled" : ""), input[i] || ""));
+      }
+      const keys = LAYOUT.map(label => {
+        const b = mk("button", "key", label);
+        b.dataset.key = label;
+        if (label === "*" || label === "#") b.classList.add("symbol");
+        if (label === "⌫") { b.classList.add("back"); b.setAttribute("aria-label", "刪除"); }
+        if (label === "✓") { b.classList.add("confirm"); b.textContent = "✓ 確認"; }
+        b.addEventListener("click", () => press(label));
+        keypad.appendChild(b);
+        return b;
+      });
+      const lock = (v) => keys.forEach(k => { k.disabled = v; });
+
+      function press(label) {
+        if (label === "⌫") { input = input.slice(0, -1); paint(); return; }
+        if (label === "✓") { submit(); return; }
+        if (input.length < slots) { input += label; paint(); }
+      }
+      function submit() {
+        if (input.length === 0) return;      // 還沒輸入就按確認,不算答錯
+        lock(true);
+        const ok = input === lv.answer;
+        if (!ok) display.classList.add("passcode-shake");
+        ctx.answer(ok, input).then(() => {
+          display.classList.remove("passcode-shake");
+          input = "";
+          paint();
+          lock(false);
+        });
+      }
+      // 電腦上也可以直接用實體鍵盤輸入數字、*、#、Backspace、Enter
+      function onKey(e) {
+        const label = e.key === "Backspace" ? "⌫" : e.key === "Enter" ? "✓" : (/^[0-9*#]$/.test(e.key) ? e.key : null);
+        if (!label) return;
+        const btn = keys.find(k => k.dataset.key === label);
+        if (!btn || btn.disabled) return;
+        e.preventDefault();
+        btn.classList.add("pressed");
+        setTimeout(() => btn.classList.remove("pressed"), 100);
+        press(label);
+      }
+      document.addEventListener("keydown", onKey);
+      paint();
+      return () => document.removeEventListener("keydown", onKey);
+    }
+  },
+
+  /* 文字題:玩家用鍵盤輸入文字,answer 可以是字串或字串陣列(都算對) */
+  text: {
+    validate(lv) {
+      const list = Array.isArray(lv.answer) ? lv.answer : [lv.answer];
+      if (!list.length || list.some(a => !isText(a))) {
+        return ['answer 要是不空白的字串,或是字串陣列(例如 ["cat", "Cat"])'];
+      }
+      return [];
+    },
+    render(lv, ctx) {
+      const norm = (s) => {
+        const t = String(s).normalize("NFKC").trim().replace(/\s+/g, " ");
+        return lv.caseSensitive ? t : t.toLowerCase();
+      };
+      const accepted = [].concat(lv.answer).map(norm);
+      const input = mk("input", "text-answer");
+      input.type = "text";
+      input.placeholder = lv.placeholder || "在這裡輸入答案";
+      input.autocomplete = "off";
+      input.setAttribute("autocapitalize", "off");
+      input.setAttribute("spellcheck", "false");
+      const ok = confirmBtn(lv);
+      ctx.top.appendChild(input);
+      ctx.top.appendChild(ok);
+
+      function submit() {
+        if (!input.value.trim()) return;      // 還沒輸入就按確認,不算答錯
+        input.disabled = ok.disabled = true;
+        const right = accepted.includes(norm(input.value));
+        if (!right) input.classList.add("passcode-shake");
+        ctx.answer(right, input.value).then(() => {
+          input.classList.remove("passcode-shake");
+          input.value = "";
+          input.disabled = ok.disabled = false;
+          input.focus();
+        });
+      }
+      ok.addEventListener("click", submit);
+      input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.isComposing) submit(); });
+      input.focus();
+    }
+  },
+
+  /* 轉輪鎖:每個轉輪用 ▲▼ 轉到正確的字 */
+  dial: {
+    validate(lv) {
+      const okAnswer = isText(lv.answer) || (Array.isArray(lv.answer) && lv.answer.length && lv.answer.every(isText));
+      if (!okAnswer) return ['answer 要是字串(每個字一個轉輪,例如 "GOLD")或字串陣列(例如 ["11", "45"])'];
+      const { ans, wheels } = dialParts(lv), errors = [];
+      ans.forEach((a, i) => {
+        const opts = wheels[i];
+        if (!Array.isArray(opts) || opts.length < 2) errors.push(`第 ${i + 1} 個轉輪沒有選項:答案不是「全部數字」或「全部大寫字母」時,要用 wheels 寫出轉輪的選項`);
+        else if (!opts.includes(a)) errors.push(`第 ${i + 1} 個轉輪的選項裡沒有答案「${a}」`);
+      });
+      const warnings = [];
+      if (!errors.length && ans.every((a, i) => wheels[i][0] === a)) warnings.push("轉輪一開始的位置就是答案,調整 wheels 的順序");
+      if (ans.length > 6) warnings.push("轉輪超過 6 個,在手機上可能排不下");
+      if (!errors.length && wheels.some(o => o.some(x => x.length > 5))) warnings.push("有轉輪選項超過 5 個字,在手機上可能擠不下");
+      if (Array.isArray(lv.sep) && lv.sep.length !== ans.length - 1) warnings.push(`sep 寫成陣列時,要有 ${ans.length - 1} 個(每兩個轉輪之間一個,不要分隔就寫 "")`);
+      return { errors, warnings };
+    },
+    render(lv, ctx) {
+      const { ans, wheels } = dialParts(lv);
+      const pos = ans.map(() => 0);
+      const row = mk("div", "dial");
+      const ok = confirmBtn(lv);
+      const btns = [];
+      let touched = false;
+      wheels.forEach((opts, i) => {
+        if (i && sepAt(lv, i)) row.appendChild(mk("span", "dial-sep", sepAt(lv, i)));
+        const w = mk("div", "wheel"), val = mk("div", "wheel-val" + (opts.some(o => o.length > 2) ? " long" : ""), opts[0]);
+        if (Array.isArray(lv.labels) && lv.labels[i]) w.appendChild(mk("div", "wheel-label", lv.labels[i]));
+        const turn = (d) => {
+          touched = true;
+          pos[i] = (pos[i] + d + opts.length) % opts.length;
+          val.textContent = opts[pos[i]];
+          val.classList.remove("turn"); void val.offsetWidth; val.classList.add("turn");
+          ctx.tone(300 + pos[i] * 12, 0.04, "triangle");
+        };
+        [["▲", -1, "上一個"], ["▼", 1, "下一個"]].forEach(([label, d, aria], k) => {
+          const b = mk("button", "wheel-btn", label);
+          b.dataset.wheel = i; b.dataset.dir = d;
+          b.setAttribute("aria-label", `第 ${i + 1} 個轉輪:${aria}`);
+          b.addEventListener("click", () => turn(d));
+          btns.push(b);
+          if (k === 0) { w.appendChild(b); w.appendChild(val); } else w.appendChild(b);
+        });
+        row.appendChild(w);
+      });
+      const lock = (v) => { btns.forEach(b => { b.disabled = v; }); ok.disabled = v; };
+      ok.addEventListener("click", () => {
+        if (!touched) return;
+        lock(true);
+        const right = pos.every((p, i) => wheels[i][p] === ans[i]);
+        if (!right) row.classList.add("passcode-shake");
+        ctx.answer(right, dialKey(lv, pos.map((p, i) => wheels[i][p]))).then(() => { row.classList.remove("passcode-shake"); lock(false); });
+      });
+      ctx.top.appendChild(row);
+      ctx.top.appendChild(ok);
+    }
+  },
+
+  /* 順序機關:照正確順序按按鈕(踩地磚、彈琴、按開關) */
+  sequence: {
+    validate(lv) {
+      const e = [];
+      if (!Array.isArray(lv.buttons) || lv.buttons.length < 2 || lv.buttons.some(b => !isText(b))) return ["buttons 至少要有 2 個不空白的文字"];
+      if (new Set(lv.buttons).size !== lv.buttons.length) e.push("buttons 裡有重複的文字");
+      if (!Array.isArray(lv.answer) || !lv.answer.length) e.push("answer 要是陣列,照順序寫出要按的按鈕文字");
+      else lv.answer.forEach(a => { if (!lv.buttons.includes(a)) e.push(`answer 裡的「${a}」不在 buttons 裡`); });
+      if (lv.tones !== undefined && (!Array.isArray(lv.tones) || lv.tones.length !== lv.buttons.length || lv.tones.some(t => !isNum(t)))) e.push("tones 要是數字陣列,數量和 buttons 一樣");
+      if (lv.cols !== undefined && !(Number.isInteger(lv.cols) && lv.cols > 0)) e.push("cols 要是正整數");
+      if (lv.blocked !== undefined) {
+        if (!Array.isArray(lv.blocked) || lv.blocked.some(b => !(lv.buttons || []).includes(b))) e.push("blocked 要是 buttons 裡的文字陣列(不能按的格子)");
+        else if (Array.isArray(lv.answer) && lv.answer.some(a => lv.blocked.includes(a))) e.push("answer 裡有 blocked 的格子,玩家按不到");
+      }
+      return e;
+    },
+    render(lv, ctx) {
+      const cols = lv.cols || (lv.buttons.length <= 4 ? lv.buttons.length : 3);
+      const blocked = lv.blocked || [];
+      const trail = mk("div", "seq-trail");
+      const grid = mk("div", "seq-grid");
+      grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      const reset = mk("button", "link-btn", "↺ 重新來過");
+      let picked = [], locked = false;
+      const first = (p) => p.split("\n")[0];
+      const paint = () => {
+        trail.textContent = picked.length ? picked.map(first).join(" → ") : (lv.strict || lv.hideCount ? "依序按下" : `依序按 ${lv.answer.length} 個`);
+        btns.forEach((b, i) => {      // 按過的格子保持亮著,標上第幾步
+          const steps = picked.map((p, k) => p === lv.buttons[i] ? k + 1 : 0).filter(Boolean);
+          b.classList.toggle("on", steps.length > 0);
+          b.dataset.n = steps.join(",");
+        });
+      };
+      const btns = lv.buttons.map((label, i) => {
+        const b = mk("button", "seq-btn" + (blocked.includes(label) ? " blocked" : ""), label);
+        b.disabled = blocked.includes(label);
+        b.addEventListener("click", () => {
+          if (locked) return;
+          ctx.tone(lv.tones ? lv.tones[i] : 220 + i * 40, 0.3, lv.tones ? "sine" : "triangle");
+          b.classList.add("lit");
+          setTimeout(() => b.classList.remove("lit"), 250);
+          picked.push(label);
+          paint();
+          // strict:每按一步就檢查,按錯立刻算答錯、全部熄滅;否則按滿才一起檢查
+          const wrongStep = lv.strict && label !== lv.answer[picked.length - 1];
+          if (!wrongStep && picked.length < lv.answer.length) return;
+          setLock(true);
+          const right = !wrongStep && picked.every((p, k) => p === lv.answer[k]);
+          ctx.answer(right, picked.map(first).join("→")).then(() => { picked = []; paint(); setLock(false); });
+        });
+        grid.appendChild(b);
+        return b;
+      });
+      function setLock(v) { locked = v; btns.forEach((b, i) => { b.disabled = v || blocked.includes(lv.buttons[i]); }); reset.disabled = v; }
+      reset.addEventListener("click", () => { picked = []; paint(); });
+      ctx.top.appendChild(trail);
+      ctx.top.appendChild(grid);
+      ctx.top.appendChild(reset);
+      paint();
+    }
+  },
+
+  /* 計數:用 + − 調到正確的數量。visual: "balance" 會畫天平,按確認後才往重的一邊傾斜 */
+  counter: {
+    validate(lv) {
+      const r = validateRange(lv, 99);
+      if (lv.visual !== undefined && lv.visual !== "balance" && lv.visual !== "cup") return ['visual 只能是 "balance"、"cup"(或不寫)'];
+      return r;
+    },
+    render(lv, ctx) {
+      const { min, max, step, start } = rangeOf(lv, 99);
+      let value = start, touched = false;
+      const row = mk("div", "stepper-row"), minus = mk("button", "round-btn", lv.minusLabel || "−"), plus = mk("button", "round-btn", lv.plusLabel || "+");
+      if (lv.minusLabel || lv.plusLabel) minus.style.width = plus.style.width = "auto", minus.style.borderRadius = plus.style.borderRadius = "999px", minus.style.padding = plus.style.padding = "0 18px", minus.style.fontSize = plus.style.fontSize = "1.1rem";
+      const out = mk("div", "readout"), ok = confirmBtn(lv);
+      minus.setAttribute("aria-label", "減少"); plus.setAttribute("aria-label", "增加");
+      let beam = null, rightPan = null, water = null;
+      if (lv.visual === "cup") {         // 量杯:每一格一條刻度,水位跟著數值變
+        const cup = mk("div", "cup");
+        cup.style.setProperty("--tick", `${200 / Math.max(1, Math.round((max - min) / step))}px`);
+        water = mk("div", "water");
+        cup.appendChild(water);
+        ctx.top.appendChild(cup);
+      }
+      if (lv.visual === "balance") {
+        const box = mk("div", "balance");
+        box.innerHTML = '<div class="pillar"></div><div class="base"></div><div class="beam"><div class="pan left"><span></span></div><div class="pan right"><span></span></div></div>';
+        beam = box.querySelector(".beam");
+        rightPan = box.querySelector(".pan.right span");
+        box.querySelector(".pan.left span").textContent = lv.leftLabel || "?";
+        ctx.top.appendChild(box);
+      }
+      const tilt = () => { if (beam) beam.style.setProperty("--tilt", value === lv.answer ? "0deg" : value < lv.answer ? "-9deg" : "9deg"); };
+      const paint = () => {
+        out.innerHTML = `${escapeHtml(fmtNum(value))}<small>${escapeHtml(lv.unit || "")}</small>`;
+        if (rightPan) rightPan.textContent = `${fmtNum(value)} ${lv.unit || ""}`;
+        if (water) water.style.height = `${((value - min) / (max - min)) * 100}%`;
+        minus.disabled = value <= min; plus.disabled = value >= max;
+      };
+      const change = (d) => { touched = true; value = Math.min(max, Math.max(min, value + d)); paint(); };
+      minus.addEventListener("click", () => change(-step));
+      plus.addEventListener("click", () => change(step));
+      ok.addEventListener("click", () => {
+        if (!touched) return;
+        minus.disabled = plus.disabled = ok.disabled = true;
+        tilt();
+        ctx.answer(value === lv.answer, fmtNum(value)).then(() => { ok.disabled = false; paint(); });
+      });
+      row.appendChild(minus); row.appendChild(out); row.appendChild(plus);
+      ctx.top.appendChild(row);
+      ctx.top.appendChild(ok);
+      paint();
+      if (beam) beam.style.setProperty("--tilt", "-9deg");      // 一開始右盤是空的,左邊比較重
+    }
+  },
+
+  /* 滑桿:拖到正確的數值。visual: "compass" 會畫一個指針跟著轉的羅盤(數值當作角度) */
+  slider: {
+    validate(lv) {
+      if (!isNum(lv.min) || !isNum(lv.max)) return ["min 和 max 都要寫數字"];
+      if (lv.tolerance !== undefined && !(isNum(lv.tolerance) && lv.tolerance >= 0)) return ["tolerance 要是 0 以上的數字"];
+      if (lv.visual !== undefined && lv.visual !== "compass") return ['visual 只能是 "compass"(或不寫)'];
+      return validateRange(lv, lv.max);
+    },
+    render(lv, ctx) {
+      const { min, max, step, start } = rangeOf(lv, lv.max);
+      let touched = false, needle = null;
+      if (lv.visual === "compass") {
+        const c = mk("div", "compass");
+        needle = mk("div", "needle");
+        [["e", "E"], ["s", "S"], ["w", "W"]].forEach(([cls, t]) => c.appendChild(mk("i", "compass-mark " + cls, t)));
+        c.appendChild(needle);
+        ctx.top.appendChild(c);
+      }
+      const out = mk("div", "readout");
+      const input = mk("input", "slider");
+      input.type = "range"; input.min = min; input.max = max; input.step = step; input.value = start;
+      input.setAttribute("aria-label", lv.question);
+      const ok = confirmBtn(lv);
+      const paint = () => {
+        out.innerHTML = `${escapeHtml(fmtNum(Number(input.value)))}<small>${escapeHtml(lv.unit || "")}</small>`;
+        if (needle) needle.style.transform = `rotate(${Number(input.value)}deg)`;
+      };
+      input.addEventListener("input", () => { touched = true; paint(); });
+      ok.addEventListener("click", () => {
+        if (!touched) return;
+        input.disabled = ok.disabled = true;
+        const right = Math.abs(Number(input.value) - lv.answer) <= (lv.tolerance || 0) + 1e-9;
+        ctx.answer(right, fmtNum(Number(input.value))).then(() => { input.disabled = ok.disabled = false; });
+      });
+      out.style.margin = "0 auto 4px";
+      ctx.top.appendChild(out);
+      ctx.top.appendChild(input);
+      ctx.top.appendChild(ok);
+      paint();
+    }
+  },
+
+  /* 旋轉水管:點管件轉 90 度,接出一條從左上角(上方流入)到右下角(下方流出)的密閉水路。
+     過關是照規則算水流(pipeFlow),不是比對 solution;solution 只用來驗算這一關有解 */
+  pipes: {
+    validate(lv) {
+      const errors = [], warnings = [];
+      if (!Number.isInteger(lv.size) || lv.size < 2 || lv.size > 6) return ["size 要是 2 到 6 的整數"];
+      const cells = lv.size * lv.size;
+      const rotList = (k) => Array.isArray(lv[k]) && lv[k].length === cells && lv[k].every(r => Number.isInteger(r) && r >= 0 && r <= 3);
+      const cellList = (k) => lv[k] === undefined || (Array.isArray(lv[k]) && lv[k].every(i => Number.isInteger(i) && i >= 0 && i < cells));
+      if (!Array.isArray(lv.tiles) || lv.tiles.length !== cells || lv.tiles.some(t => !PIPE_SHAPES[t])) errors.push(`tiles 要有 ${cells} 格,每格是 "I"(直管)、"L"(彎管)或 "T"(三通管)`);
+      ["start", "solution"].forEach(k => { if (!rotList(k)) errors.push(`${k} 要有 ${cells} 個 0~3 的整數(每格順時針轉幾次 90 度)`); });
+      ["valves", "shocks"].forEach(k => { if (!cellList(k)) errors.push(`${k} 要是格子索引的陣列(0 到 ${cells - 1})`); });
+      if (errors.length) return errors;
+      if ((lv.valves || []).some(i => (lv.shocks || []).includes(i))) errors.push("同一格不能既是 valves 又是 shocks");
+      const sol = pipeFlow(lv, lv.solution).problem;
+      if (sol) errors.push(`solution 這組轉法過不了關(${sol}),這一關可能無解`);
+      if (!pipeFlow(lv, lv.start).problem) warnings.push("start 一開始就是通的,換一組起始轉法");
+      return { errors, warnings };
+    },
+    render(lv, ctx) {
+      const n = lv.size, turns = lv.start.slice();
+      const styled = (tag, css, text) => { const e = mk(tag, "", text); e.style.cssText = css; return e; };
+      const label = "color:var(--muted);font-size:.9rem;font-weight:700;max-width:380px;margin:0 auto 4px;";
+      const grid = styled("div", `display:grid;grid-template-columns:repeat(${n},1fr);gap:6px;max-width:380px;margin:0 auto 4px;`);
+      const ok = confirmBtn(lv);
+      let touched = false, locked = false;
+
+      const cells = lv.tiles.map((kind, i) => {
+        const shock = (lv.shocks || []).includes(i), valve = (lv.valves || []).includes(i);
+        const b = styled("button", `position:relative;aspect-ratio:1;padding:0;border:var(--line);border-radius:var(--radius);background:var(--surface);box-shadow:var(--pop-press);touch-action:manipulation;overflow:hidden;${shock ? "border-color:var(--bad);border-width:2px;" : ""}`);
+        b.className = "pipe-cell";
+        const arms = PIPE_SHAPES[kind].map(d => `<line x1="20" y1="20" x2="${20 + [0, 20, 0, -20][d]}" y2="${20 + [-20, 0, 20, 0][d]}" stroke="currentColor" stroke-width="11"/>`).join("");
+        b.innerHTML = `<svg viewBox="0 0 40 40" aria-hidden="true" style="display:block;width:100%;height:100%;transition:transform .2s,color .2s">${arms}<circle cx="20" cy="20" r="5.5" fill="currentColor"/></svg>`;
+        if (valve) b.appendChild(styled("span", "position:absolute;left:50%;top:50%;width:30%;height:30%;transform:translate(-50%,-50%);border-radius:50%;background:var(--butter);border:2px solid var(--surface);"));
+        if (shock) b.appendChild(styled("span", "position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:1.3rem;line-height:1;", "⚡"));
+        b.addEventListener("click", () => {
+          if (locked) return;
+          touched = true;
+          turns[i]++;
+          ctx.tone(260 + (turns[i] % 4) * 40, 0.05);
+          paint();
+        });
+        grid.appendChild(b);
+        return { b, svg: b.firstChild, kind, mark: valve ? "(閥門)" : shock ? "(危險)" : "" };
+      });
+
+      function paint() {
+        const { wet } = pipeFlow(lv, turns);
+        cells.forEach(({ b, svg, kind, mark }, i) => {
+          svg.style.transform = `rotate(${turns[i] * 90}deg)`;
+          svg.style.color = wet.has(i) ? "var(--pink)" : "var(--muted)";
+          const dirs = pipeOpenings(kind, turns[i] % 4).map(d => "上右下左"[d]).join("、");
+          b.setAttribute("aria-label", `第 ${Math.floor(i / n) + 1} 列第 ${i % n + 1} 格:${PIPE_NAMES[kind]}${mark},開口朝${dirs}${wet.has(i) ? ",已接通" : ""}`);
+          b.disabled = locked;
+        });
+        ok.disabled = locked;
+      }
+      ok.addEventListener("click", () => {
+        if (!touched) return;                        // 還沒動過管件就按,不算答錯
+        locked = true; paint();
+        const { problem } = pipeFlow(lv, turns);
+        if (problem) ctx.toast(problem);
+        ctx.answer(!problem).then(() => { locked = false; paint(); });
+      });
+
+      ctx.top.appendChild(styled("div", label, lv.inLabel || "💧 入口 ↓"));
+      ctx.top.appendChild(grid);
+      ctx.top.appendChild(styled("div", label + "text-align:right;margin-bottom:14px;", lv.outLabel || "↓ 出口"));
+      ctx.top.appendChild(ok);
+      paint();
+    }
+  },
+
+  /* 放置:點一個物件,再點要放的格子(點已經放東西的格子可以拿回來)。也可以拿來做配對 */
+  assign: {
+    validate(lv) {
+      const e = [];
+      if (!Array.isArray(lv.slots) || !lv.slots.length || lv.slots.some(s => !isText(s))) return ["slots 要是至少有 1 個文字的陣列(每一格的名稱)"];
+      if (!Array.isArray(lv.items) || !lv.items.length || lv.items.some(s => !isText(s))) return ["items 要是至少有 1 個文字的陣列(可以放的物件)"];
+      if (!Array.isArray(lv.answer) || lv.answer.length !== lv.slots.length) return [`answer 要是陣列,長度和 slots 一樣(${lv.slots.length}),依序寫每一格該放的物件,留空寫 null`];
+      if (lv.multiple && lv.answer.some(a => !Array.isArray(a))) return ['multiple: true 時,answer 的每一格要寫成陣列,例如 [["水筆仔", "矽藻"], ["彈塗魚"], []]'];
+      const left = lv.items.slice();
+      lv.answer.forEach((a, i) => {
+        [].concat(a === null ? [] : a).forEach(x => {
+          const k = left.indexOf(x);
+          if (k < 0) e.push(`answer 第 ${i + 1} 格的「${x}」不在 items 裡(或數量不夠)`); else left.splice(k, 1);
+        });
+      });
+      if (lv.answer.every(a => a === null || (Array.isArray(a) && !a.length))) e.push("answer 不能每一格都是空的");
+      if (lv.board !== undefined) {
+        if (!isText(lv.board)) e.push("board 要是插圖的 HTML 字串(格子會疊在這張圖上)");
+        if (!Array.isArray(lv.slotPos) || lv.slotPos.length !== lv.slots.length || lv.slotPos.some(p => !isPos(p))) e.push(`有 board 時,slotPos 要寫 ${lv.slots.length} 個位置,每個是 [左右%, 上下%](0~100)`);
+      }
+      return e;
+    },
+    render(lv, ctx) {
+      // 每一格放的是 items 的第幾個(陣列);multiple: true 時一格可以放很多個(分類),否則一格一個
+      const placed = lv.slots.map(() => []);
+      const order = shuffle(lv.items.map((_, i) => i));
+      const tray = mk("div", "chip-row"), ok = confirmBtn(lv);
+      // 有 board 時,格子疊在插圖上(slotPos 是每一格中心點的位置,百分比);沒有就排成一列
+      let grid, layer;
+      if (lv.board) {
+        grid = mk("div", "board");
+        grid.innerHTML = lv.board;          // 出題者自己寫的插圖
+        layer = mk("div", "board-slots");
+        grid.appendChild(layer);
+      } else grid = layer = mk("div", "slots");
+      let selected = null, locked = false;
+      const labels = (s) => placed[s].map(i => lv.items[i]);
+      function put(s, i) {
+        if (lv.multiple) placed[s].push(i); else placed[s] = [i];
+        selected = null;
+        ctx.sfx("item");
+        paint();
+      }
+      function paint() {
+        layer.innerHTML = ""; tray.innerHTML = "";
+        lv.slots.forEach((name, s) => {
+          const b = mk("button", "slot" + (placed[s].length ? " filled" : ""));
+          b.dataset.s = s;
+          if (lv.board) { b.style.left = lv.slotPos[s][0] + "%"; b.style.top = lv.slotPos[s][1] + "%"; }
+          b.appendChild(mk("span", "slot-label", name));
+          b.appendChild(mk("span", "slot-item", labels(s).join("、")));
+          b.disabled = locked;
+          b.addEventListener("click", () => {
+            if (wasDrag()) return;
+            if (selected !== null) return put(s, selected);
+            if (placed[s].length) placed[s].pop();               // 沒選物件時點格子:拿回最後放的那一個
+            else ctx.toast("把下面的物件拖過來(或先點物件,再點格子)");
+            paint();
+          });
+          layer.appendChild(b);
+        });
+        order.forEach(i => {
+          if (placed.some(p => p.includes(i))) return;
+          const b = mk("button", "chip" + (selected === i ? " selected" : ""), lv.items[i]);
+          b.disabled = locked;
+          b.addEventListener("click", () => { if (wasDrag()) return; selected = selected === i ? null : i; paint(); });
+          dragToSlot(b, (slotEl) => { if (!locked) put(Number(slotEl.dataset.s), i); });
+          tray.appendChild(b);
+        });
+        ok.disabled = locked;
+      }
+      ok.addEventListener("click", () => {
+        if (placed.every(p => !p.length)) return;
+        locked = true; selected = null; paint();
+        const cell = (list) => [].concat(list === null ? [] : list).map(String).sort().join("+");
+        const got = lv.slots.map((_, s) => cell(labels(s)));
+        const want = lv.answer.map(cell);
+        const key = (list) => (lv.anyOrder ? list.slice().sort() : list).join("\n");   // anyOrder:只看放了哪些,不看放在哪一格
+        ctx.answer(key(got) === key(want), got.map(c => c || "空").join("、")).then(() => { locked = false; paint(); });     // 答錯保留擺法,讓玩家調整
+      });
+      ctx.top.appendChild(grid);
+      ctx.top.appendChild(tray);
+      ctx.top.appendChild(ok);
+      paint();
+    }
+  }
+};
+/* 規則包沒有寫 LEVEL_TYPES 時,當作沒有自訂題型 */
+const CUSTOM_TYPES = (typeof LEVEL_TYPES !== "undefined" && LEVEL_TYPES) ? LEVEL_TYPES : {};
+const allTypes = () => ({ ...BUILTIN_TYPES, ...CUSTOM_TYPES });
+const typeOf = (level) => allTypes()[level.type || "choice"];
+
+/* ---------- 檢查資料 ----------
+   開始畫面載入時執行。學員手改 LEVELS 很容易漏逗號、把答案寫成數字、答案索引超出範圍,
+   有問題就在開始畫面顯示紅字、不讓開始遊戲,避免玩到一半才出現空白畫面。
+   每種題型自己檢查自己的欄位(validate),新增題型時一起寫 */
+function validateEngine() {
+  const errors = [], warnings = [];
+  if (!Array.isArray(LEVELS) || LEVELS.length === 0) return { errors: ["LEVELS 必須是一個至少有一關的陣列"], warnings };
+  const types = allTypes();
+  Object.entries(CUSTOM_TYPES).forEach(([name, t]) => {
+    if (!t || typeof t.render !== "function" || typeof t.validate !== "function") errors.push(`LEVEL_TYPES 的「${name}」要有 validate(level) 和 render(level, ctx) 兩個函式`);
+  });
+  if (!Number.isInteger(GAME.lives) || GAME.lives < 0) errors.push("GAME.lives 要是 0 以上的整數(0 代表不限)");
+  if (GAME.failTo !== "start" && GAME.failTo !== "level") errors.push('GAME.failTo 只能是 "start" 或 "level"');
+  if (GAME.timeLimit !== undefined && (!Number.isInteger(GAME.timeLimit) || GAME.timeLimit < 0)) errors.push("GAME.timeLimit 要是 0 以上的整數(單位是秒,0 代表不限時)");
+  if (GAME.theme !== undefined && !THEMES.includes(GAME.theme)) errors.push(`GAME.theme 只能是 ${THEMES.map(t => `"${t}"`).join("、")}`);
+  Object.entries(ITEM_DEFS).forEach(([id, it]) => {
+    if (!it || !isText(it.name)) errors.push(`ITEMS 的「${id}」要有 name(道具名稱)`);
+  });
+  const owned = new Set();          // 走到這一關之前已經拿到的道具
+  LEVELS.forEach((lv, i) => {
+    const name = `第 ${i + 1} 關`;
+    if (!lv || typeof lv !== "object") { errors.push(`${name}:不是有效的關卡物件(檢查逗號和大括號)`); return; }
+    if (!isText(lv.question)) errors.push(`${name}:question 要寫題目文字`);
+    ["hint", "explanation", "title", "scene", "art", "success"].forEach(k => {
+      if (lv[k] !== undefined && typeof lv[k] !== "string") errors.push(`${name}:${k} 要是文字`);
+    });
+    if (lv.hints !== undefined && (!Array.isArray(lv.hints) || lv.hints.some(h => !isText(h)))) errors.push(`${name}:hints 要是文字陣列(由淺到深的提示)`);
+    if (lv.clues !== undefined && !Array.isArray(lv.clues)) errors.push(`${name}:clues 要是陣列`);
+    (Array.isArray(lv.clues) ? lv.clues : []).forEach((c, k) => {
+      const cn = `${name}的第 ${k + 1} 張線索`;
+      if (typeof c === "string") { if (!c.trim()) errors.push(`${cn}:是空白的`); return; }
+      if (!c || typeof c !== "object" || (!isText(c.text) && !isText(c.html) && !c.align)) { errors.push(`${cn}:要寫 text(文字)、html(插圖)或 align(疊圖對齊)`); return; }
+      if (c.align) validateAlign(c.align, "align.").forEach(m => errors.push(`${cn}:${m}`));
+      [].concat(c.needs || []).forEach(id => {
+        if (!ITEM_DEFS[id]) errors.push(`${cn}:needs 的道具「${id}」不在 ITEMS 裡`);
+        else if (!owned.has(id)) errors.push(`${cn}:需要道具「${ITEM_DEFS[id].name}」,但前面沒有任何關卡的 reward 給這個道具,玩家會卡住`);
+      });
+    });
+    [].concat(lv.needs || []).forEach(id => {
+      if (!ITEM_DEFS[id]) errors.push(`${name}:needs 的道具「${id}」不在 ITEMS 裡`);
+      else if (!owned.has(id)) errors.push(`${name}:需要道具「${ITEM_DEFS[id].name}」,但前面沒有任何關卡的 reward 給這個道具,玩家會卡住`);
+    });
+    if (lv.reward !== undefined && !Array.isArray(lv.reward)) errors.push(`${name}:reward 要是道具 id 的陣列,例如 ["key"]`);
+    const type = lv.type || "choice";
+    const t = types[type];
+    if (!t) errors.push(`${name}:不認得的題型 "${type}",目前有 ${Object.keys(types).join("、")}`);
+    else if (typeof t.validate === "function") {
+      try {
+        const r = t.validate(lv) || [];
+        (Array.isArray(r) ? r : (r.errors || [])).forEach(m => errors.push(`${name}:${m}`));
+        if (!Array.isArray(r)) (r.warnings || []).forEach(m => warnings.push(`${name}:${m}`));
+      } catch (e) { errors.push(`${name}:檢查題型「${type}」時出錯:${e.message}`); }
+    }
+    if ((type === "choice" || type === "multi") && Array.isArray(lv.choices) && new Set(lv.choices).size !== lv.choices.length) warnings.push(`${name}:有兩個選項的文字一樣`);
+    if (type === "passcode" && typeof lv.answer === "string" && lv.answer.length > 8) warnings.push(`${name}:密碼超過 8 格,在手機上可能排不下`);
+    if (lv.mistakeOf !== undefined && typeof lv.mistakeOf !== "function") errors.push(`${name}:mistakeOf 要是函式,例如 (given) => given.includes("菇") ? "菇不能行光合作用喔" : ""`);
+    if (lv.mistakeOf && !CUSTOM_TYPES[type]) {
+      let rights = [];
+      try { rights = answerKeys(lv); } catch (e) { /* ignore */ }
+      rights.forEach(a => { let m = ""; try { m = lv.mistakeOf(String(a)); } catch (e) { m = ""; } if (m) errors.push(`${name}:mistakeOf 把正確答案「${a}」也判成錯誤`); });
+    }
+    if (lv.mistakes !== undefined && !CUSTOM_TYPES[type]) {     // 自訂題型自己決定 mistakes 怎麼用
+      if (!lv.mistakes || typeof lv.mistakes !== "object" || Array.isArray(lv.mistakes) || Object.values(lv.mistakes).some(v => !isText(v))) {
+        errors.push(`${name}:mistakes 要寫成 { "錯誤答案": "給學生的話", ... }`);
+      } else if (t) {
+        let rights = [];
+        try { rights = answerKeys(lv); } catch (e) { /* 資料有錯時上面已經報過 */ }
+        rights.forEach(a => {
+          if (a !== undefined && Object.keys(lv.mistakes).some(k => canonKey(lv, k) === canonKey(lv, a))) errors.push(`${name}:mistakes 裡的「${a}」其實是正確答案`);
+        });
+        // 錯誤答案要是學生操作得出來的樣子,否則這句話永遠不會出現
+        const has = (list, x) => list.some(o => canonKey(lv, String(o).split("\n")[0]) === canonKey(lv, x));
+        const how = { choice: "要和某個選項的文字一樣", multi: "要用「、」接起選到的選項,例如「陽光、水」",
+          sequence: lv.strict ? "strict 的順序題按錯就停,要寫成「對的前幾步→錯的那一步」,例如第一步就錯寫「C1」" : "要用「→」接起按的按鈕,例如「A1→B2」", assign: "要依格子順序用「、」接起每一格放的東西,空格寫「空」,同一格多個用「+」" };
+        const ok = {
+          choice: (k) => has(lv.choices, k),
+          multi: (k) => k.split("、").every(p => lv.choices.some(c => normKey(c).split("、").includes(normKey(p)))),   // 選項本身有「、」時,引擎也是拆開比對
+          sequence: (k) => k.split("→").every(p => has(lv.buttons, p)) &&
+            // strict:按錯的那一步就停,所以只會拿到「對的前幾步 + 錯的那一步」
+            (!lv.strict || k.split("→").every((p, i, a) => (i < a.length - 1) === (canonKey(lv, p) === canonKey(lv, String(lv.answer[i]).split("\n")[0])))),
+          assign: (k) => lv.anyOrder || (k.split("、").length === lv.slots.length && k.split("、").every(s => s === "空" || s.split("+").every(p => has(lv.items, p))))
+        }[type];
+        if (ok) Object.keys(lv.mistakes).forEach(k => { try { if (!ok(k)) errors.push(`${name}:mistakes 的「${k}」不是學生操作得出來的答案(${how[type]})`); } catch (e) { /* 資料有錯時上面已經報過 */ } });
+      }
+    }
+    (Array.isArray(lv.reward) ? lv.reward : []).forEach(id => {
+      if (!ITEM_DEFS[id]) errors.push(`${name}:reward 的道具「${id}」不在 ITEMS 裡`);
+      else if (owned.has(id)) warnings.push(`${name}:道具「${ITEM_DEFS[id].name}」前面的關卡已經給過了`);
+      owned.add(id);
+    });
+  });
+  Object.keys(ITEM_DEFS).forEach(id => { if (!owned.has(id)) warnings.push(`道具「${ITEM_DEFS[id].name || id}」沒有任何關卡的 reward 會給`); });
+  if (GAME.lives > 0 && GAME.lives > LEVELS.length * 3) warnings.push("愛心數比關卡數的三倍還多,幾乎不可能失敗");
+  if (GAME.timeLimit > 0 && GAME.timeLimit < LEVELS.length * 10) warnings.push("timeLimit 的單位是秒:目前平均每關不到 10 秒,幾乎不可能過關");
+  const idx = LEVELS.filter(lv => lv && (lv.type || "choice") === "choice").map(lv => lv.answerIndex);
+  if (GAME.shuffleChoices === false && idx.length >= 3 && idx.every(i => i === idx[0])) {
+    warnings.push(`選項不會打亂(shuffleChoices 是 false),但每一題選擇題的正確答案都在第 ${idx[0] + 1} 個選項,玩家很快就會發現`);
+  }
+  return { errors, warnings };
+}
+
+/* 內建題型的正確答案,寫成 mistakes 比對用的樣子(用來檢查 mistakes 有沒有把正確答案寫進去) */
+function answerKeys(lv) {
+  const t = lv.type || "choice";
+  if (t === "choice") return [lv.choices[lv.answerIndex]];
+  if (t === "multi") return [lv.choices.filter((_, i) => lv.answerIndexes.includes(i)).join("、")];
+  if (t === "passcode" || t === "text") return [].concat(lv.answer);
+  if (t === "dial") return [dialKey(lv, dialParts(lv).ans)];
+  if (t === "sequence") return [lv.answer.map(a => a.split("\n")[0]).join("→")];
+  if (t === "counter" || t === "slider") return [fmtNum(lv.answer)];
+  if (t === "assign") return lv.anyOrder ? [] : [lv.answer.map(a => [].concat(a === null ? [] : a).join("+") || "空").join("、")];
+  return [];
+}
+
+function paintList(id, title, items) {
+  const box = el(id);
+  const shown = items.slice(0, 12);
+  box.innerHTML = "";
+  if (items.length) {
+    box.appendChild(document.createTextNode(title));
+    const ul = document.createElement("ul");
+    shown.forEach(m => { const li = document.createElement("li"); li.textContent = m; ul.appendChild(li); });
+    if (items.length > shown.length) { const li = document.createElement("li"); li.textContent = `…還有 ${items.length - shown.length} 項`; ul.appendChild(li); }
+    box.appendChild(ul);
+  }
+  box.classList.toggle("hidden", !items.length);
+}
+function runValidation() {
+  const errors = [], warnings = [];
+  const merge = (fn) => {
+    try {
+      const r = fn() || {};
+      (r.errors || []).forEach(x => errors.push(x));
+      (r.warnings || []).forEach(x => warnings.push(x));
+    } catch (e) { errors.push("檢查程式出錯:" + e.message); }
+  };
+  merge(validateEngine);
+  if (!errors.length) merge(() => rule("validateRules"));
+  paintList("level-errors", "關卡資料有問題,請修正後重新整理:", errors);
+  paintList("level-warnings", "提醒(不影響開始,但可能不是你要的設計):", warnings);
+  el("btn-start").disabled = errors.length > 0;
+  return { errors, warnings };
+}
+
+/* ---------- 存檔與續玩 ---------- */
+function saveProgress(override) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, ...(override || {}) })); } catch (e) { /* 存不了就算了 */ }
+}
+function loadProgress() {
+  let raw = null;
+  try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { return false; }
+  if (!raw) return false;
+  try {
+    const saved = JSON.parse(raw);
+    // 存檔的關卡位置必須還在目前的 LEVELS 範圍內;
+    // 改過關卡數量後,舊存檔可能超出範圍,這時直接丟掉,避免畫面空白或報錯
+    const ok = Number.isInteger(saved.currentLevel) && saved.currentLevel >= 0 && saved.currentLevel < LEVELS.length;
+    if (ok) {
+      state = { ...state, ...saved };
+      if (!Array.isArray(state.stars)) state.stars = [];
+      state.items = Array.isArray(state.items) ? state.items.filter(id => ITEM_DEFS[id]) : [];
+      return true;
+    }
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (e) { /* 存檔壞掉就當作沒有存檔,重新開始 */ }
+  return false;
+}
+const freshState = (name) => ({ currentLevel: 0, correctCount: 0, wrongCount: 0, startTime: null, playerName: name || "", lives: 0, levelWrong: 0, stars: [], items: [], hintsUsed: 0, levelHints: 0, timeLeft: 0 });
+
+function startGame() {
+  if (runValidation().errors.length) return;
+  const nameInput = el("player-name").value.trim();
+  state.playerName = nameInput || "玩家";
+  if (!state.startTime) state.startTime = Date.now();     // 續玩時保留原本的開始時間
+  if (GAME.lives > 0 && (!(state.lives > 0) || state.lives > GAME.lives)) state.lives = GAME.lives;
+  if (GAME.timeLimit > 0 && (!(state.timeLeft > 0) || state.timeLeft > GAME.timeLimit)) state.timeLeft = GAME.timeLimit;
+  showScreen("screen-game");
+  renderLevel(state.currentLevel);
+  startTimer();
+  saveProgress();
+}
+function showScreen(id) {
+  ["screen-start", "screen-game", "screen-end", "screen-fail"].forEach(s => el(s).classList.toggle("hidden", s !== id));
+  el("hint-modal").classList.add("hidden");
+}
+
+/* 吉祥物(或主題圖示)的表情:"happy" / "sad" / "" (回到平常) */
+function setMascot(mood) {
+  [el("game-mascot"), el("game-icon")].forEach(m => {
+    m.classList.remove("happy", "sad");
+    void m.getBoundingClientRect(); // 讓動畫可以連續重播
+    if (mood) m.classList.add(mood);
+  });
+}
+
+function renderLives() {
+  const box = el("lives");
+  box.classList.toggle("hidden", !(GAME.lives > 0));
+  if (GAME.lives > 0) {
+    const left = Math.max(0, state.lives);
+    box.textContent = "❤️".repeat(left) + "🖤".repeat(Math.max(0, GAME.lives - left));
+    box.setAttribute("aria-label", `剩 ${left} 顆愛心`);
+  }
+}
+
+/* 關卡進度:12 關以內畫成一顆一顆的關卡節點,更多關就用進度條 */
+function renderProgress(index) {
+  const steps = LEVELS.length <= 12;
+  el("stepper").classList.toggle("hidden", !steps);
+  el("progress-wrap").classList.toggle("hidden", steps);
+  el("progress-bar").style.width = Math.round((index / LEVELS.length) * 100) + "%";
+  if (!steps) return;
+  el("stepper").innerHTML = LEVELS.map((_, i) =>
+    (i ? `<span class="step-line${i <= index ? " done" : ""}"></span>` : "")
+    + `<span class="step${i < index ? " done" : i === index ? " now" : ""}">${i < index ? "✓" : i + 1}</span>`).join("");
+}
+
+/* ---------- 倒數計時 ----------
+   只有在作答中才會扣時間:看解說、停在開始或結算畫面時不扣 */
+let timerId = null;
+function renderTimer() {
+  const box = el("timer"), on = GAME.timeLimit > 0;
+  box.classList.toggle("hidden", !on);
+  if (!on) return;
+  const t = Math.max(0, state.timeLeft);
+  box.textContent = `⏱ ${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+  box.classList.toggle("danger", t <= 30);
+}
+function tick() {
+  if (locked || el("screen-game").classList.contains("hidden")) return;
+  state.timeLeft--;
+  renderTimer();
+  if (state.timeLeft <= 0) { locked = true; failGame("time"); return; }
+  saveProgress();
+}
+function startTimer() {
+  clearInterval(timerId);
+  if (GAME.timeLimit > 0) timerId = setInterval(tick, 1000);
+  renderTimer();
+}
+
+/* ---------- 道具袋 ---------- */
+function renderInventory(fresh) {
+  const box = el("inventory");
+  box.classList.toggle("hidden", !Object.keys(ITEM_DEFS).length);
+  box.innerHTML = "";
+  box.appendChild(mk("span", "inv-label", state.items.length ? "🎒" : "🎒 還沒有道具"));
+  state.items.forEach(id => {
+    const it = ITEM_DEFS[id];
+    if (!it) return;
+    const chip = mk("button", "item-chip" + ((fresh || []).includes(id) ? " new" : ""), itemLabel(id));
+    chip.title = it.desc || it.name;
+    chip.addEventListener("click", () => toast(it.desc ? `${it.name}:${it.desc}` : it.name));
+    box.appendChild(chip);
+  });
+}
+
+/* ---------- 線索卡 ----------
+   有 reveal 或 needs 的線索一開始蓋住,按下按鈕(需要的道具都有)才顯示 */
+function renderClues(level) {
+  const box = el("clues");
+  box.innerHTML = "";
+  (level.clues || []).forEach(raw => {
+    const c = typeof raw === "string" ? { text: raw } : raw;
+    const card = mk("div", "clue");
+    if (c.title) card.appendChild(mk("h4", "clue-title", c.title));
+    const body = mk("div", "clue-body");
+    if (c.text) body.appendChild(document.createTextNode(c.text));
+    if (c.html) { const h = mk("div"); h.innerHTML = c.html; body.appendChild(h); }   // html 是出題者自己寫的插圖,不是玩家輸入
+    if (c.align) {
+      // 疊圖對齊:把圖層拖到底圖上,靠近 target 就吸附固定,再顯示 alignedText(對齊之後才讀得到的資訊)
+      const a = c.align;
+      const after = a.alignedText ? mk("div", "align-after hidden", a.alignedText) : null;
+      const w = alignWidget(a, (pos) => {
+        if (!near(pos, a.target, a.tolerance || 4)) return;
+        pos[0] = a.target[0]; pos[1] = a.target[1];
+        w.place(); w.lock(true);
+        card.classList.add("aligned");
+        sfx("item");
+        if (after) after.classList.remove("hidden");
+      });
+      body.appendChild(w.box);
+      body.appendChild(mk("div", "align-tip", a.tip || "拖動上面的圖層對準位置(也可以點一下圖層,再用方向鍵移動)"));
+      if (after) body.appendChild(after);
+    }
+    const needs = [].concat(c.needs || []);
+    if (c.reveal || needs.length) {
+      body.classList.add("hidden");
+      const b = mk("button", "clue-reveal", c.reveal || `使用 ${needs.map(itemLabel).join(" + ")}`);
+      b.addEventListener("click", () => {
+        if (needs.some(id => !state.items.includes(id))) { sfx("wrong"); toast("還沒有拿到需要的道具"); return; }
+        sfx("item");
+        b.remove();
+        body.classList.remove("hidden");
+        body.classList.add("revealed");
+      });
+      card.appendChild(b);
+    }
+    card.appendChild(body);
+    box.appendChild(card);
+  });
+}
+
+/* ---------- 分層提示 ----------
+   level.hints 由淺到深;玩家每按一次多看一層,看過的層數會記到 state.hintsUsed(給星星和結算用) */
+function renderHints() {
+  const level = LEVELS[state.currentLevel], hints = hintsOf(level), list = el("hint-list");
+  list.innerHTML = "";
+  hints.slice(0, state.levelHints).forEach((h, i) => {
+    const tier = mk("div", "hint-tier");
+    tier.appendChild(mk("b", "", hints.length > 1 ? `第 ${i + 1} 層提示` : "提示"));
+    tier.appendChild(document.createTextNode(h));
+    list.appendChild(tier);
+  });
+  if (state.levelHints < hints.length) {
+    const more = mk("button", "btn-primary", state.levelHints ? `再看下一層(${state.levelHints + 1} / ${hints.length})` : `看提示(共 ${hints.length} 層)`);
+    more.id = "btn-hint-more";
+    more.addEventListener("click", () => {
+      state.levelHints++;
+      state.hintsUsed++;
+      if (!locked) saveProgress();
+      renderHints();
+    });
+    list.appendChild(more);
+  }
+}
+function openHints() { renderHints(); el("hint-modal").classList.remove("hidden"); el("btn-hint-close").focus(); }
+function closeHints() { el("hint-modal").classList.add("hidden"); }
+
+/* ---------- 畫出目前這一關 ---------- */
+let cleanup = null;
+let locked = false;          // 這一關已經答對、正在換關,不再接受作答(不存檔)
+let advanceTimer = null;
+const ctx = {
+  top: null, bottom: null,
+  answer: (isCorrect, given) => answer(isCorrect, given),
+  sfx, tone, toast,
+  hasItem: (id) => state.items.includes(id)
+};
+
+function renderLevel(index) {
+  if (cleanup) { try { cleanup(); } catch (e) { /* 題型的清理出錯不影響換關 */ } cleanup = null; }
+  clearTimeout(advanceTimer);
+  locked = false;
+  const level = LEVELS[index];
+  el("level-title").textContent = `${level.title || `第 ${index + 1} 關`}(${index + 1} / ${LEVELS.length})`;
+  el("scene").textContent = level.scene || "";
+  el("scene").classList.toggle("hidden", !level.scene);
+  el("art").innerHTML = level.art || "";        // art 是出題者自己寫的插圖(行內 SVG 等),不是玩家輸入
+  el("art").classList.toggle("hidden", !level.art);
+  renderClues(level);
+  el("question-text").textContent = level.question;
+  el("feedback").textContent = "";
+  el("feedback").className = "feedback";
+  el("explain").classList.add("hidden");
+  el("next-wrap").classList.add("hidden");
+  el("btn-hint").classList.toggle("hidden", !hintsOf(level).length);
+  closeHints();
+  setMascot("");
+  renderLives();
+  renderTimer();
+  renderInventory();
+  const body = el("level-body");
+  body.classList.remove("enter"); void body.offsetWidth; body.classList.add("enter");
+
+  ctx.top = el("answer-top");
+  ctx.bottom = el("answer-bottom");
+  ctx.top.innerHTML = "";
+  ctx.bottom.innerHTML = "";
+  ctx.bottom.classList.remove("hidden");
+  cleanup = typeOf(level).render(level, ctx) || null;
+  // 關卡有 needs:機關先蓋住,玩家按「使用道具」才能操作
+  const needs = [].concat(level.needs || []);
+  el("gate").classList.toggle("hidden", !needs.length);
+  ctx.top.classList.toggle("hidden", !!needs.length);
+  ctx.bottom.classList.toggle("hidden", !!needs.length);
+  el("btn-gate").textContent = level.needsLabel || `使用 ${needs.map(itemLabel).join(" + ")}`;
+
+  renderProgress(index);
+}
+
+/* ---------- 處理作答 ----------
+   題型呼叫 ctx.answer(isCorrect):
+   答對 → 記星星、發道具、顯示回饋(有解說就停住等玩家按「下一關」,沒有就稍後自動換關);Promise 不會 resolve
+   答錯 → 計次、扣愛心、顯示提示;愛心用完就挑戰失敗,否則 0.6 秒後 resolve,題型把輸入重新打開
+   所有「換關卡」的動作都要經過 goToNextLevel(),不要在別的地方直接改 state.currentLevel */
+function answer(isCorrect, given) {
+  const never = new Promise(() => {});
+  if (locked) return never;
+  const level = LEVELS[state.currentLevel];
+  if (isCorrect) {
+    locked = true;
+    state.correctCount++;
+    const stars = Math.max(0, Math.min(3, Math.round(rule("levelStars", state.levelWrong, level, state.levelHints) || 0)));
+    state.stars.push(stars);
+    const got = (level.reward || []).filter(id => ITEM_DEFS[id] && !state.items.includes(id));
+    state.items.push(...got);
+    if (got.length) renderInventory(got);
+    showFeedback(true, level, stars, got);
+    // 這裡不存檔:關卡位置要到 goToNextLevel() 才前進,現在存的話,
+    // 停在解說畫面重新整理會回到同一關再答對一次,答對數和星星就重複計算了
+    if (level.explanation) {
+      el("explain").textContent = level.explanation;
+      el("explain").classList.remove("hidden");
+      el("answer-bottom").classList.add("hidden");
+      const last = state.currentLevel === LEVELS.length - 1;
+      el("btn-next").textContent = last ? "完成 ▶" : "下一關 ▶";
+      el("next-wrap").classList.remove("hidden");
+      el("btn-next").focus();
+    } else {
+      advanceTimer = setTimeout(goToNextLevel, (level.success || got.length) ? 1800 : 800);   // 有劇情文字或道具時多停一下讓玩家讀
+    }
+    return never;
+  }
+  state.wrongCount++;
+  state.levelWrong++;
+  if (GAME.lives > 0) state.lives--;
+  renderLives();
+  showFeedback(false, level, 0, null, given);
+  if (GAME.lives > 0 && state.lives <= 0) {
+    locked = true;
+    saveAfterFail();
+    setTimeout(() => failGame("lives"), 700);
+    return never;
+  }
+  saveProgress();
+  return new Promise(resolve => setTimeout(resolve, 600));
+}
+
+/* 挑戰失敗時的存檔:
+   failTo "level" → 留著存檔(愛心和時間補滿、這一關重新計次),在失敗畫面重新整理也能從這一關繼續
+   failTo "start" → 刪掉存檔,重新整理就是從第一關開始 */
+function saveAfterFail() {
+  if (GAME.failTo === "level") {
+    saveProgress({ lives: GAME.lives, levelWrong: 0, timeLeft: GAME.timeLimit || 0 });
+  } else {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+  }
+}
+
+/* 答錯時,依玩家給的答案找 level.mistakes 裡對應的話(忽略空白、大小寫、全半形) */
+const normKey = (s) => String(s).normalize("NFKC").replace(/\s+/g, "").toLowerCase();
+/* 複選題不管選項順序、放置題不管同一格裡的順序,所以比對前先排好 */
+function canonKey(level, s) {
+  const t = level.type || "choice", k = normKey(s);
+  if (t === "multi") return k.split("、").sort().join("、");
+  if (t === "assign") return k.split("、").map(c => c.split("+").sort().join("+")).join("、");
+  return k;
+}
+function mistakeFor(level, given) {
+  if (given === undefined || given === null) return "";
+  if (typeof given === "string" && given.startsWith("ROUTE|")) return given.slice(6);
+  if (level.mistakes) {
+    const k = Object.keys(level.mistakes).find(k => canonKey(level, k) === canonKey(level, given));
+    if (k) return level.mistakes[k];
+  }
+  // mistakeOf(given):用規則判斷(例如「只要選了菇」),回傳要說的話,不符合就回傳 ""
+  if (typeof level.mistakeOf === "function") { try { return level.mistakeOf(String(given)) || ""; } catch (e) { /* 規則寫錯不影響遊戲 */ } }
+  return "";
+}
+function showFeedback(isCorrect, level, stars, got, given) {
+  if (isCorrect) {
+    const starText = GAME.showStars && stars ? " " + "⭐".repeat(stars) : "";
+    const last = state.currentLevel === LEVELS.length - 1;
+    const itemText = got && got.length ? `\n🎒 獲得:${got.map(itemLabel).join("、")}` : "";
+    el("feedback").textContent = (level.success || (last ? "答對了!全部過關 🎉" : "答對了!往下一關出發 ✨")) + starText + itemText;
+    el("feedback").className = "feedback good";
+    setMascot("happy");
+    sfx(got && got.length ? "item" : "right");
+  } else {
+    const mistake = mistakeFor(level, given);
+    el("feedback").textContent = mistake ? `🤔 ${mistake}` : level.hint ? `再想想:${level.hint}` : (hintsOf(level).length ? "不對喔,再試一次!卡住了可以按上面的「💡 提示」" : "再試一次!");
+    el("feedback").className = "feedback bad";
+    setMascot("sad");
+    sfx("wrong");
+  }
+}
+
+/* ---------- 前進下一關(所有「換關卡」的動作都要經過這個函式) ---------- */
+function goToNextLevel() {
+  state.currentLevel++;
+  state.levelWrong = 0;
+  state.levelHints = 0;
+  saveProgress();
+  if (state.currentLevel >= LEVELS.length) {
+    finishGame();
+  } else {
+    renderLevel(state.currentLevel);
+  }
+}
+
+/* ---------- 遊戲結束:通關或挑戰失敗 ---------- */
+function makeInfo(result) {
+  return {
+    playerName: state.playerName,
+    result,
+    levelsPassed: state.correctCount,
+    totalLevels: LEVELS.length,
+    wrongCount: state.wrongCount,
+    hintsUsed: state.hintsUsed,
+    totalStars: state.stars.reduce((a, b) => a + b, 0),
+    durationSec: Math.round((Date.now() - state.startTime) / 1000),
+    timeLeft: Math.max(0, state.timeLeft)
+  };
+}
+function renderSummary(id, info) {
+  el(id).innerHTML = rule("summaryRows", info)
+    .map(([k, v]) => `<div class="summary-row"><span>${escapeHtml(k)}</span><span>${escapeHtml(v)}</span></div>`).join("");
+}
+function showStory(id, text) {
+  el(id).textContent = text || "";
+  el(id).classList.toggle("hidden", !text);
+}
+
+/* payload 裡的欄位由使用者決定;加欄位時 gas-backend.gs 的 HEADERS 和 rowFor() 也要對應 */
+function uploadResult(info) {
+  sendResultsToSheet({
+    playerName: info.playerName,
+    totalLevels: info.totalLevels,
+    levelsPassed: info.levelsPassed,
+    wrongCount: info.wrongCount,
+    totalStars: info.totalStars,
+    result: info.result,
+    durationSec: info.durationSec
+  });
+}
+
+function finishGame() {
+  const info = makeInfo("pass");
+  renderProgress(LEVELS.length);
+  showScreen("screen-end");
+  showStory("end-story", GAME.ending);
+  renderSummary("end-summary", info);
+  sfx("win");
+  uploadResult(info);
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+}
+
+/* reason:"lives" 愛心用完 / "time" 時間到 */
+function failGame(reason) {
+  const info = makeInfo("fail");
+  const why = reason === "time" ? "時間到了" : "愛心用完了";
+  showScreen("screen-fail");
+  showStory("fail-story", GAME.failStory);
+  el("fail-text").textContent = GAME.failTo === "level"
+    ? `${why}。再試一次,會從第 ${state.currentLevel + 1} 關重新開始(愛心和時間補滿)。`
+    : `${why}。再試一次,會從第一關重新開始。`;
+  renderSummary("fail-summary", info);
+  el("submit-status").textContent = "";
+  sfx("fail");
+  uploadResult(info);
+  saveAfterFail();
+}
+
+function retryAfterFail() {
+  el("submit-status").textContent = "";
+  if (GAME.failTo === "level") {
+    state.lives = GAME.lives;
+    state.levelWrong = 0;
+  } else {
+    state = freshState(state.playerName);
+    state.startTime = Date.now();
+    state.lives = GAME.lives;
+  }
+  state.timeLeft = GAME.timeLimit || 0;
+  showScreen("screen-game");
+  renderLevel(state.currentLevel);
+  startTimer();
+  saveProgress();
+}
+
+/* ---------- 送資料到 Google Apps Script ----------
+   使用 no-cors 模式:前端讀不到回應內容是正常現象,
+   不代表送出失敗,不要改成用回應內容判斷成功與否 */
+function sendResultsToSheet(payload) {
+  const statusEl = el("submit-status");
+  if (!GAS_URL || GAS_URL.indexOf("PASTE_YOUR") === 0) {
+    statusEl.textContent = "(尚未設定 Google 試算表網址,成績只顯示在畫面上)";
+    return;
+  }
+  statusEl.textContent = "成績上傳中...";
+  fetch(GAS_URL, {
+    method: "POST",
+    mode: "no-cors",
+    // no-cors 模式下瀏覽器只允許 text/plain 這類簡單的 Content-Type;後端一樣用 JSON.parse 讀內容
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    keepalive: true,               // 玩家一看到結算就關分頁,這筆成績也還是會送出去
+    body: JSON.stringify(payload)
+  }).then(() => {
+    statusEl.textContent = "成績已送出 ✅";
+  }).catch(() => {
+    statusEl.textContent = "送出失敗,請檢查網路連線";
+  });
+}
+
+/* ---------- 初始化與事件綁定 ---------- */
+function resetProgress() {
+  state = freshState("");
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+  el("player-name").value = "";
+  el("btn-start").textContent = "開始闖關";
+  el("btn-reset").classList.add("hidden");
+}
+el("btn-start").addEventListener("click", startGame);
+el("btn-reset").addEventListener("click", resetProgress);
+el("btn-next").addEventListener("click", goToNextLevel);
+el("btn-retry").addEventListener("click", retryAfterFail);
+el("btn-gate").addEventListener("click", () => {
+  const needs = [].concat(LEVELS[state.currentLevel].needs || []);
+  if (needs.some(id => !state.items.includes(id))) { sfx("wrong"); toast("還沒有拿到需要的道具"); return; }
+  sfx("item");
+  el("gate").classList.add("hidden");
+  ctx.top.classList.remove("hidden");
+  ctx.bottom.classList.remove("hidden");
+});
+el("btn-hint").addEventListener("click", openHints);
+el("btn-hint-close").addEventListener("click", closeHints);
+el("hint-modal").addEventListener("click", (e) => { if (e.target === el("hint-modal")) closeHints(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeHints(); });
+el("btn-sound").addEventListener("click", () => {
+  soundOn = !soundOn;
+  el("btn-sound").textContent = soundOn ? "🔊" : "🔇";
+  sfx("click");
+});
+el("btn-restart").addEventListener("click", () => {
+  state = freshState("");
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+  showScreen("screen-start");
+  el("player-name").value = "";
+  el("submit-status").textContent = "";
+  el("btn-start").textContent = "開始闖關";
+  el("btn-reset").classList.add("hidden");
+});
+
+document.documentElement.dataset.theme = THEMES.includes(GAME.theme) ? GAME.theme : "cute";
+document.querySelectorAll('.icon-badge[data-icon="game"]').forEach(b => { b.textContent = GAME.icon || "🗝️"; });
+el("btn-sound").textContent = soundOn ? "🔊" : "🔇";
+if (GAME.title) {
+  el("game-title").textContent = GAME.title;
+  document.title = GAME.title;     // 瀏覽器分頁的標題也跟著 GAME.title,不用另外改 <title>
+}
+if (GAME.desc) el("game-desc").textContent = GAME.desc;
+showStory("game-story", GAME.story);
+el("teacher-text").textContent = GAME.teacherNotes || "";
+el("teacher-notes").classList.toggle("hidden", !GAME.teacherNotes);
+if (GAME.endTitle) el("end-title").textContent = GAME.endTitle;
+if (!runValidation().errors.length && loadProgress()) {
+  el("player-name").value = state.playerName;
+  el("btn-start").textContent = `繼續闖關(第 ${state.currentLevel + 1} 關)`;
+  el("btn-reset").classList.remove("hidden");
+}
+window.__engineReady = true;   // 之後的錯誤不再由最上面的錯誤顯示處理
+</script>
+
+</body>
+</html>
